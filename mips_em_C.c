@@ -1,21 +1,8 @@
 #include <stdio.h>
-
-//Struct provisória
-struct load_mem{
-    int ins1[32];
-};
-
-void open_mem_arq();
-int p_count(pc);
+#include <stdlib.h>
 
 int main() {
-	int op,pc;
-	FILE *arq_mem;
-
-	struct load_mem *p; //Alocação dinamica da struct
-    	p = (struct load_mem*) malloc (sizeof(struct load_mem));
-   	
-
+	int op;
 	do {
 		printf("\n *** MENU *** \n");
 		printf("1 - Carregar memoria de instrucoes\n");
@@ -66,17 +53,4 @@ int main() {
 		}
 	} while(op != 11);
 
-}
-
-int open_mem_arq(arq_mem){
-
-	arq_mem = fopen("memo.mem", "rb");
-	if(arq_mem == NULL)
-		printf("Erro ao abrir o arquivo.");
-	return arq_mem;
-}
-
-int p_count(pc) {
-	pc+=1;
-	return pc;
 }
