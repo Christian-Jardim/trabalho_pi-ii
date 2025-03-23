@@ -1,23 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void menu();
+
 int main() {
 	int op;
 	do {
-		printf("\n *** MENU *** \n");
-		printf("1 - Carregar memoria de instrucoes\n");
-		printf("2 - Carregar memoria de dados\n");
-		printf("3 - Imprimir memorias\n");
-		printf("4 - Imprimir banco de registradores\n");
-		printf("5 - Imprimir todo o simulador\n");
-		printf("6 - Salvar .asm\n");
-		printf("7 - Salvar .dat\n");
-		printf("8 - Executar programa\n");
-		printf("9 - Executar instrucao\n");
-		printf("10 - Volta uma instrucao\n");
-		printf("11 - Sair\n\n");
+		menu();
 		scanf("%i", &op);
-		
 		do {
 			if (op < 1 || op > 11) {
 				printf("\nOpcao invalida, digite novamente: ");
@@ -52,5 +42,19 @@ int main() {
 			break;
 		}
 	} while(op != 11);
+}
 
+void menu() {
+	printf("\n *** MENU *** \n");
+	printf("1 - Carregar memoria de instrucoes\n");
+	printf("2 - Carregar memoria de dados\n");
+	printf("3 - Imprimir memorias\n");
+	printf("4 - Imprimir banco de registradores\n");
+	printf("5 - Imprimir todo o simulador\n");
+	printf("6 - Salvar .asm\n");
+	printf("7 - Salvar .dat\n");
+	printf("8 - Executar programa\n");
+	printf("9 - Executar instrucao\n");
+	printf("10 - Volta uma instrucao\n");
+	printf("11 - Sair\n\n");
 }
