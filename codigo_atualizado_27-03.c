@@ -139,8 +139,8 @@ void menu() {
 				if(inst->tipo == Tipo_OUTROS) {
 					printf("Tipo OUTROS\n\n");
 				}
-				programULA(inst);
-				printf("O resultado do programa e: %d\n", reg[inst->reg]);
+				programULA(inst, reg);
+				printf("O resultado do programa e: %d\n", reg.regis[inst->rd]);
 
 				pc++;
 			}
@@ -317,7 +317,7 @@ void programULA(Deco *inst, Reg reg) {
 			inst->rd = inst->rs  + inst->rt;
 		}
 		if(inst->funct == 1) {
-			reg[inst->rd] = inst->rs  - inst->rt;
+			reg.regis[inst->rd] = inst->rs  - inst->rt;
 		}
 	}
 }
