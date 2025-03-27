@@ -68,7 +68,7 @@ int main() {
 
 //MENU
 void menu(){
-                 ULA ula;
+	ULA ula;
     Reg reg;
     Deco dec;
     char **meminst = NULL, instrucao[16];
