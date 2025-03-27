@@ -45,7 +45,7 @@ int binario_para_inteiro(const char *instrucao, int inicio, int tamanho);
 void decodificar_uma_instrucao (const char *instrucao, Deco *dec);
 void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst);
 void menu();
-int programULA(Deco *inst);
+void programULA(Deco *inst);
 
 //PROGRAMA PRINCIPAL
 int main() {
