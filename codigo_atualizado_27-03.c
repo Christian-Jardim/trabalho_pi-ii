@@ -139,8 +139,8 @@ void menu() {
 				if(inst->tipo == Tipo_OUTROS) {
 					printf("Tipo OUTROS\n\n");
 				}
-				resul = programULA(inst);
-				printf("O resultado do programa e: %d\n", resul);
+				programULA(inst);
+				printf("O resultado do programa e: %d\n", inst->rd);
 
 				pc++;
 			}
@@ -310,15 +310,14 @@ void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst) {
 	}
 }
 
-int programULA(Deco *inst) {
+void programULA(Deco *inst) {
 	int resul;
 	if(inst->opcode == 0) {
 		if(inst->funct == 0) {
-			resul = inst->rs  + inst->rt;
+			inst->rd = inst->rs  + inst->rt;
 		}
 		if(inst->funct == 1) {
-			resul = inst->rs  - inst->rt;
+			inst->rd = inst->rs  - inst->rt;
 		}
 	}
-	return resul;
 }
