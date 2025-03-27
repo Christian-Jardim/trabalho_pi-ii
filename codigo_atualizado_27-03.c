@@ -45,7 +45,7 @@ int binario_para_inteiro(const char *instrucao, int inicio, int tamanho);
 void decodificar_uma_instrucao (const char *instrucao, Deco *dec);
 void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst);
 void menu();
-void programULA(Deco *inst);
+void programULA(Deco *inst, Reg reg);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -140,7 +140,7 @@ void menu() {
 					printf("Tipo OUTROS\n\n");
 				}
 				programULA(inst);
-				printf("O resultado do programa e: %d\n", inst->rd);
+				printf("O resultado do programa e: %d\n", reg[inst->reg]);
 
 				pc++;
 			}
@@ -310,14 +310,14 @@ void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst) {
 	}
 }
 
-void programULA(Deco *inst) {
+void programULA(Deco *inst, Reg reg) {
 	int resul;
 	if(inst->opcode == 0) {
 		if(inst->funct == 0) {
 			inst->rd = inst->rs  + inst->rt;
 		}
 		if(inst->funct == 1) {
-			inst->rd = inst->rs  - inst->rt;
+			reg[inst->rd] = inst->rs  - inst->rt;
 		}
 	}
 }
