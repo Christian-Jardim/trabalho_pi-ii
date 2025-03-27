@@ -15,11 +15,6 @@ typedef enum {
 } Tipo_Instrucao;
 
 typedef struct {
-	int op1;
-	int op2;
-} ULA;
-
-typedef struct {
 	int regis[8];
 } Reg;
 
@@ -57,7 +52,6 @@ int main() {
 
 //MENU
 void menu() {
-	ULA ula;
 	Reg reg;
 	Deco dec;
 	char **meminst = NULL, instrucao[16];
@@ -314,7 +308,7 @@ void programULA(Deco *inst, Reg reg) {
 	int resul;
 	if(inst->opcode == 0) {
 		if(inst->funct == 0) {
-			inst->rd = inst->rs  + inst->rt;
+			reg.regis[inst->rd] = inst->rs  + inst->rt;
 		}
 		if(inst->funct == 1) {
 			reg.regis[inst->rd] = inst->rs  - inst->rt;
