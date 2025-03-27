@@ -316,6 +316,9 @@ int programULA(Deco *inst) {
 		if(inst->funct == 0) {
 			resul = inst->rs  + inst->rt;
 		}
+		if(inst->funct == 1) {
+			resul = inst->rs  - inst->rt;
+		}
 	}
 	return resul;
 }
