@@ -18,8 +18,8 @@ typedef enum{
 } Tipo_Instrucao;
 
 typedef struct {
-        int op1;
-        int op2;
+	int op1;
+	int op2;
 } ULA;
 
 typedef struct {
