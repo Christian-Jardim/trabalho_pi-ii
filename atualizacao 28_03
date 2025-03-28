@@ -257,8 +257,7 @@ int binario_para_inteiro(const char *instrucao, int inicio, int tamanho) {
 
 	strncpy(binario, &instrucao[inicio], tamanho);
 
-	char *resto_string;
-	valor = strtol(binario, &resto_string, 2);
+	valor = strtol(binario, NULL, 2);
 
 	return valor;
 }
