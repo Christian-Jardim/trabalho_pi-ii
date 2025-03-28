@@ -35,12 +35,12 @@ char **alocMemInstr(int n);
 void liberaMem(char **pmem);
 void carregaMemInst(const char *arquivo, char **pmem, int n);
 void printMemory(char **pmem, int n);
-void printReg(Reg reg);
+void printReg(Reg *regi);
 int binario_para_inteiro(const char *instrucao, int inicio, int tamanho);
 void decodificar_uma_instrucao (const char *instrucao, Deco *dec);
 void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst);
 void menu();
-void programULA(Deco *inst, Reg reg);
+void programULA(Deco *inst, Reg *regi);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -56,6 +56,9 @@ void menu() {
 	Deco dec;
 	char **meminst = NULL, instrucao[16];
 	int op, nlinhas, resul;
+	Reg *regi = malloc(nlinhas * sizeof(Reg));
+	regi->regis[2] = 2;
+    regi->regis[4] = 2;
 
 	do {
 		printf("\n\n *** MENU *** \n");
@@ -95,7 +98,7 @@ void menu() {
 			break;
 
 		case 4:
-			printReg(reg);
+			printReg(regi);
 			break;
 
 		case 5:
@@ -131,7 +134,7 @@ void menu() {
 				if(inst->tipo == Tipo_OUTROS) {
 					printf("Tipo OUTROS\n\n");
 				}
-				programULA(inst, reg);
+				programULA(inst, regi);
 			}
 			free(memoriainst);
 			break;
@@ -153,9 +156,9 @@ void menu() {
 	} while(op != 11);
 }
 
-void printReg(Reg reg) {
+void printReg(Reg *regi) {
 	for(int i=0; i<8; i++) {
-		printf("REGISTRADOR [%d] - %d\n", i, reg.regis[i]);
+		printf("REGISTRADOR [%d] - %d\n", i, regi->regis[i]);
 	}
 }
 
@@ -166,7 +169,7 @@ void printReg(Reg reg) {
 int contarlinhas(const char *arquivo)
 {
 	char c;
-	int contador=0;
+	int contador=1;
 	// abre o arquivo em modo leitura
 	FILE *arq = fopen (arquivo, "r");
 	if (!arq)
@@ -253,7 +256,7 @@ void printMemory(char **pmem, int n)
 int binario_para_inteiro(const char *instrucao, int inicio, int tamanho) {
 
 	int valor=0;
-	char binario[tamanho];
+	char binario[tamanho- 1];
 
 	strncpy(binario, &instrucao[inicio], tamanho);
 
@@ -299,16 +302,16 @@ void decodificar_tudo (char **meminst, int tamanho, Deco *memoriainst) {
 }
 
 
-void programULA(Deco *inst, Reg reg) {
+void programULA(Deco *inst, Reg *regi) {
 	if(inst->opcode == 0) {
 		if(inst->funct == 0) {
-			reg.regis[inst->rd] = reg.regis[inst->rs]  + reg.regis[inst->rt];
+			regi->regis[inst->rd] = regi->regis[inst->rs] + regi->regis[inst->rt];
 		}
 		if(inst->funct == 1) {
-			reg.regis[inst->rd] = reg.regis[inst->rs]  - reg.regis[inst->rt];
+			regi->regis[inst->rd] = regi->regis[inst->rs] - regi->regis[inst->rt];
 		}
 	if(inst->opcode == 4) {
-		reg.regis[inst->rt] = reg.regis[inst->rs]  + inst->imm;
+		regi->regis[inst->rt] = regi->regis[inst->rs]  + inst->imm;
 		} 
 	}
 }
