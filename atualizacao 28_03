@@ -304,10 +304,10 @@ void programULA(Deco *inst, Reg reg) {
 	int resul;
 	if(inst->opcode == 0) {
 		if(inst->funct == 0) {
-			reg.regis[inst->rd] = inst->rs  + inst->rt;
+			reg.regis[inst->rd] = reg.regis[inst->rs]  + reg.regis[inst->rt];
 		}
 		if(inst->funct == 1) {
-			reg.regis[inst->rd] = inst->rs  - inst->rt;
+			reg.regis[inst->rd] = reg.regis[inst->rs]  - reg.regis[inst->rt];
 		}
 	}
 }
