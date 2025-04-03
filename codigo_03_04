@@ -314,8 +314,8 @@ int binarioParaDecimal(const char *bin){
 }
 
 void printmemory(int *memdado) {
-	for(int i=0; i<255; i++) {
-		printf("%d\n", memdado[i]);
+	for(int i=0; i<249; i++) {
+		printf("%d  %d  %d  %d  %d  %d  %d  %d\n", memdado[i], memdado[i+ 1], memdado[i+ 2], memdado[i+ 3], memdado[i+ 4], memdado[i+ 5], memdado[i+ 6], memdado[i+ 7]);
 	}
 }
 
