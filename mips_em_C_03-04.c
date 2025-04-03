@@ -52,7 +52,7 @@ void carregaMemInst(const char *arquivo, char mem[256][17]);
 void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec);
 void printReg(int *reg);
 void menu();
-void progULA(Deco *inst, int *reg);
+void progULA(Deco *inst, int *reg, int *memdado);
 void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
 void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec);
 void printInstrucao(Deco *dec);
@@ -70,9 +70,8 @@ void menu()
 {
 	Deco dec;
 	char meminst[256][17] = {{'\0'}};
-	char memdado[256][17] = {{'\0'}};
 	struct instrucao instrucao;
-	int op, nlinhas, resul, registrador[8] = {0}, pc = 0;
+	int op, nlinhas, resul, registrador[8] = {0}, memdado[256] = {0}, pc = 0;
 	
 	do {
 		printf("\n\n *** MENU *** \n");
@@ -130,10 +129,7 @@ void menu()
 			
 			decodificarInstrucao(meminst[pc], &instrucao, &dec);
 			printInstrucao(&dec);
-			progULA(&dec, registrador);
-			if(dec->opckde == 7) {
-
-			}
+			progULA(&dec, registrador, memdado);
 
 			pc++;
 			
@@ -219,12 +215,20 @@ void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec)
     }
 }
 
-void progULA(Deco *dec, int *reg)
+void progULA(Deco *dec, int *reg, int *memdado)
 {
 	if (dec->opcode == 11)
 	{
 		reg[dec->rt] = dec->imm;
 	}
+	else if (dec->opcode == 7)
+	{
+		reg[dec->rt] = reg[dec->rs] + memdado[dec->imm];
+	}
+	else if (dec->opcode == 15)
+	{
+		memdado[dec->rs + dec->imm] = reg[dec->rt];
+	}  
 	else if (dec->opcode == 4)
 	{
 		reg[dec->rt] = reg[dec->rs] + dec->imm;
@@ -237,14 +241,14 @@ void progULA(Deco *dec, int *reg)
 	{
 		reg[dec->rd] = reg[dec->rs] - reg[dec->rt];
 	}
-  else if (dec->opcode == 0 && dec->funct == 4)
+	else if (dec->opcode == 0 && dec->funct == 4)
 	{
 		reg[dec->rd] = reg[dec->rs] & reg[dec->rt];
-  }
-  else if (dec->opcode == 0 && dec->funct == 5)
+	}
+ 	else if (dec->opcode == 0 && dec->funct == 5)
 	{
 		reg[dec->rd] = reg[dec->rs] | reg[dec->rt];
-  }
+	}
 }
 
 // copia os bits da instrução para cada campo da struct instrucao
