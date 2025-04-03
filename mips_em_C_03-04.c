@@ -225,11 +225,11 @@ void progULA(Deco *dec, int *reg)
 	}
   else if (dec->opcode == 0 && dec->funct == 4)
 	{
-		reg[dec->rd] = reg[dec->rs] && reg[dec->rt];
+		reg[dec->rd] = reg[dec->rs] & reg[dec->rt];
   }
   else if (dec->opcode == 0 && dec->funct == 5)
 	{
-		reg[dec->rd] = reg[dec->rs] || reg[dec->rt];
+		reg[dec->rd] = reg[dec->rs] | reg[dec->rt];
   }
 }
 
