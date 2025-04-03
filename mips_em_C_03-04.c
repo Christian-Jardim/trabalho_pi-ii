@@ -131,6 +131,9 @@ void menu()
 			decodificarInstrucao(meminst[pc], &instrucao, &dec);
 			printInstrucao(&dec);
 			progULA(&dec, registrador);
+			if(dec->opckde == 7) {
+
+			}
 
 			pc++;
 			
