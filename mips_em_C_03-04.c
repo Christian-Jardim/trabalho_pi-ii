@@ -60,7 +60,8 @@ void menu()
 {
 	Deco dec;
 	char meminst[256][17] = {{'\0'}};
-    struct instrucao instrucao;
+	char memdado[256][17] = {{'\0'}};
+	struct instrucao instrucao;
 	int op, nlinhas, resul, registrador[8] = {0}, pc = 0;
 	
 	do {
