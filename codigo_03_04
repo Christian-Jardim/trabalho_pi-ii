@@ -228,7 +228,7 @@ void progULA(Deco *dec, int *reg, int *memdado, int *pc)
 	{
 		reg[dec->rt] = reg[dec->rs] + memdado[dec->imm];
 	}
-	else if (dec->opcode == -7)
+	else if (dec->opcode == -5)
 	{
 		memdado[dec->rs + dec->imm] = reg[dec->rt];
 	}  
