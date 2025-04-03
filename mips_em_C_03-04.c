@@ -56,6 +56,7 @@ void progULA(Deco *inst, int *reg, int *memdado);
 void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
 void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec);
 void printInstrucao(Deco *dec);
+void printmemory(int *memdado);
 
 //PROGRAMA PRINCIPAL
 int main() 
@@ -96,7 +97,7 @@ void menu()
 			break;
 
 		case 2:
-			printf("Em desenvolvimento.");
+			printmemory(memdado);
 			break;
 
 		case 3:
@@ -293,4 +294,10 @@ void printInstrucao(Deco *dec)
 int binarioParaDecimal(const char *bin)
 {
     return (int)strtol(bin, NULL, 2);
+}
+
+void printmemory(int *memdado) {
+	for(int i=0; i<255; i++) {
+		printf("%d", memdado[i]);
+	}
 }
