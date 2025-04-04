@@ -224,11 +224,11 @@ void progULA(Deco *dec, int *reg, int *memdado, int *pc)
 	{
 		reg[dec->rt] = dec->imm;
 	}
-	else if (dec->opcode == -5)
+	else if (dec->opcode == 15)
 	{
 		reg[dec->rt] = reg[dec->rs] + memdado[dec->imm];
 	}
-	else if (dec->opcode == -1)
+	else if (dec->opcode == 11)
 	{
 		memdado[dec->rs + dec->imm] = reg[dec->rt];
 	}  
@@ -307,9 +307,12 @@ int binarioParaDecimal(const char *bin){
     int valor = (int)strtol(bin, NULL, 2);
     int bits = strlen(bin);
     
-    if (valor & (1 << (bits - 1))) {
-        valor = valor - (1 << bits);
+    if(bits > 4){
+        if (valor & (1 << (bits - 1))) {
+            valor = valor - (1 << bits);
+        }
     }
+    
     return valor;
 }
 
