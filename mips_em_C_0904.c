@@ -122,11 +122,10 @@
     
             case 8:
                 printf("Em desenvolvimento.");
-								  break;
+		break;
     
-            case 9:
-                                        
-decodificarInstrucao(meminst[pc], &instrucao, &dec);
+            case 9:               
+		decodificarInstrucao(meminst[pc], &instrucao, &dec);
                 int pc_antes = pc;
                 printInstrucao(&dec);
                 controle(&dec, registrador, memdados, &pc);
