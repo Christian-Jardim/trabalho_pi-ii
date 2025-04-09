@@ -47,6 +47,7 @@
     } Deco;
     
     //NOMES DAS FUNCOES
+    void menu();
     int contarlinhas(const char *arquivo);
     int binarioParaDecimal(const char *bin);
     int extensaobits(int valor, int bits);
@@ -83,32 +84,17 @@
         int op, nlinhas, resul, pc = 0;
         
         do {
-            printf("\n\n *** MENU *** \n");
-            printf("1 - Carregar memoria de instrucoes\n");
-            printf("2 - Carregar memoria de dados\n");
-            printf("3 - Imprimir memorias\n");
-            printf("4 - Imprimir banco de registradores\n");
-            printf("5 - Imprimir todo o simulador\n");
-            printf("6 - Salvar .asm\n");
-            printf("7 - Salvar .dat\n");
-            printf("8 - Executar programa\n");
-            printf("9 - Executar instrucao\n");
-            printf("10 - Volta uma instrucao\n");
-            printf("11 - Sair\n\n");
-            printf("Sua escolha: ");
+	    menu();
             scanf("%d", &op);
-    
             switch (op) {
             case 1:
                 //carrega memoria com os dados do arquivo lido
                 carregaMemInst(meminst);
                 break;
-    
             case 2:
                 //carrega memória de dados "arquivo.dat"
                 carregarMemoriaDados(memdados);
                 break;
-    
             case 3:
                 //imprime memoria de instrucoes
                 printMemory(meminst, &instrucao, &dec);
@@ -156,6 +142,22 @@
     }
     
     //FUNCOES IMPLEMENTADAS
+    void menu() {
+	printf("\n\n *** MENU *** \n");
+        printf("1 - Carregar memoria de instrucoes\n");
+        printf("2 - Carregar memoria de dados\n");
+        printf("3 - Imprimir memorias\n")
+        printf("4 - Imprimir banco de registradores\n");
+        printf("5 - Imprimir todo o simulador\n");
+        printf("6 - Salvar .asm\n");
+        printf("7 - Salvar .dat\n");
+        printf("8 - Executar programa\n");
+        printf("9 - Executar instrucao\n");
+        printf("10 - Volta uma instrucao\n");
+        printf("11 - Sair\n\n");
+        printf("Sua escolha: ");
+    }   
+
     void printReg(int *reg) {
         for(int i=0; i<8; i++) {
             printf("REGISTRADOR [%d] - %d\n", i, reg[i]);
