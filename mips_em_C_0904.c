@@ -54,13 +54,15 @@
     void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec);
     void printReg(int *reg);
     void menu();
-    void progULA(Deco *inst, int *reg, int *memdado, int *pc);
+    void controle(Deco *inst, int *reg, int *memdado, int *pc);
     void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
     void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec);
     void printInstrucao(Deco *dec);
     void printmemory(int *memdado);
     void carregarMemoriaDados(int mem[256]);
+    int ULA(int op1, int op2, int opULA);
     void saveDAT(int mem[256]);
+    void executaP(char );
     
     //PROGRAMA PRINCIPAL
     int main() 
@@ -135,17 +137,10 @@
                 break;
     
             case 8:
-                printf("Em desenvolvimento.");
+                executaP();
     
             case 9:
-                decodificarInstrucao(meminst[pc], &instrucao, &dec);
-                int pc_antes = pc;
-                printInstrucao(&dec);
-                progULA(&dec, registrador, memdados, &pc);
-                
-                if(pc == pc_antes){
-                pc++;
-                }
+                executaI(dec, );
                 break;
     
             case 10:
@@ -234,7 +229,7 @@
         }
     }
     
-    void progULA(Deco *dec, int *reg, int *memdado, int *pc)
+    void controle(Deco *dec, int *reg, int *memdado, int *pc)
     {
         if (dec->opcode == 11)
         {
@@ -409,3 +404,13 @@ void carregarMemoriaDados(int mem[256])
     }
     fclose(arq);
   }
+
+void executaI(Deco *dec, char *meminst[256][17], int *pc, int *memdados[256]) {
+	decodificarInstrucao(meminst[pc], &instrucao, &dec);
+        int pc_antes = pc;
+        printInstrucao(&dec);
+        controle(&dec, registrador, memdados, &pc);
+	if(pc == pc_antes){
+       		pc++;
+	}
+}
