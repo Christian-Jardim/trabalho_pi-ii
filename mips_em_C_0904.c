@@ -186,36 +186,6 @@
         return contador;
     }
     
-    void carregaMemInst(char mem[256][17])
-    {
-        char arquivo[20];
-        // abre o arquivo em modo leitura
-        printf("Nome do arquivo: ");
-        scanf("%s", arquivo);
-        FILE *arq = fopen (arquivo, "r");
-        if (!arq)
-        {
-            perror ("Erro ao abrir arquivo") ;
-            exit (1) ;
-        }
-        int i = 0;
-        char linha[20]; // Buffer para leitura
-        while (i < 256 && fgets(linha, sizeof(linha), arq)) {
-            // Remover quebras de linha e caracteres extras
-            linha[strcspn(linha, "\r\n")] = '\0';
-    
-            // Ignorar linhas vazias
-            if (strlen(linha) == 0) {
-                continue;
-            }
-    
-            strncpy(mem[i], linha, 16); // Copia até 16 caracteres
-            mem[i][16] = '\0'; // Garante terminação de string
-            i++; // Avança corretamente para a próxima posição
-        }
-        fclose(arq);
-    }
-    
     void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec)
     {
         printf("\n############## MEMÓRIA DE INSTRUÇÕES ##############\n");
