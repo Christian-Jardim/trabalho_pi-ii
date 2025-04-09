@@ -62,8 +62,6 @@
     void printmemory(int *memdado);
     void carregarMemoriaDados(int mem[256]);
     int ULA(int op1, int op2, int opULA);
-    void saveDAT(int mem[256]);
-    void executaP(char );
     
     //PROGRAMA PRINCIPAL
     int main() 
@@ -119,14 +117,22 @@
                 break;
     
             case 7:
-                saveDAT(memdados);
+                printf("Em desenvolvimento.");
                 break;
     
             case 8:
-                executaP();
+                printf("Em desenvolvimento.");
+								  break;
     
             case 9:
-                executaI(dec, );
+                                        
+decodificarInstrucao(meminst[pc], &instrucao, &dec);
+                int pc_antes = pc;
+                printInstrucao(&dec);
+                controle(&dec, registrador, memdados, &pc);
+
+                if(pc == pc_antes){
+                pc++;
                 break;
     
             case 10:
@@ -358,31 +364,4 @@ void carregarMemoriaDados(int mem[256])
     {
         i++;
     }
-}
-
-  void saveDAT(int mem[256]) {
-
-    char arquivo[20];
-    printf("Nome para o arquivo de saida: ");
-    scanf("%s", arquivo);
-    FILE *arq = fopen(arquivo, "w");
-    if (!arq)
-    {
-    perror ("Erro ao abrir arquivo") ;
-    exit (1) ;
-    }
-    for(int i=0; i<256; i++) {
-      fprintf(arq,"%d\n",mem[i]);
-    }
-    fclose(arq);
-  }
-
-void executaI(Deco *dec, char *meminst[256][17], int *pc, int *memdados[256]) {
-	decodificarInstrucao(meminst[pc], &instrucao, &dec);
-        int pc_antes = pc;
-        printInstrucao(&dec);
-        controle(&dec, registrador, memdados, &pc);
-	if(pc == pc_antes){
-       		pc++;
-	}
 }
