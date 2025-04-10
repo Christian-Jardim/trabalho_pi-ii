@@ -131,7 +131,7 @@
                 decodificarInstrucao(meminst[pc], &instrucao, &dec);
                 int pc_antes = pc;
                 printInstrucao(&dec);
-                progULA(&dec, registrador, memdados, &pc);
+                controle(&dec, registrador, memdados, &pc);
                 
                 if(pc == pc_antes){
                 pc++;
@@ -155,7 +155,7 @@
 	printf("\n\n *** MENU *** \n");
         printf("1 - Carregar memoria de instrucoes\n");
         printf("2 - Carregar memoria de dados\n");
-        printf("3 - Imprimir memorias\n")
+        printf("3 - Imprimir memorias\n");
         printf("4 - Imprimir banco de registradores\n");
         printf("5 - Imprimir todo o simulador\n");
         printf("6 - Salvar .asm\n");
