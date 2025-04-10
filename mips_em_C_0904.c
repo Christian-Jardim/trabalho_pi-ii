@@ -6,7 +6,7 @@
 	1011	 => LW
 	1111	 => SW
 	1000	 => BEQ
-	0010	 => J		*/
+	0010	 => J	     */
 
     #include <stdio.h>
     #include <stdlib.h>
