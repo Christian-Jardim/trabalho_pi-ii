@@ -24,8 +24,7 @@
         Tipo_OUTROS=3
     } Tipo_Instrucao;
     
-    struct instrucao
-    {
+    struct instrucao {
         char opcode[5];
         char rs[4];
         char rt[4];
@@ -64,16 +63,13 @@
     int ULA(int op1, int op2, int opULA);
     
     //PROGRAMA PRINCIPAL
-    int main() 
-    {
+    int main() {
         menu();
-    
         return 0;
     }
     
     //MENU
-    void menu() 
-    {
+    void menu() {
         Deco dec;
         MEMINST;
         MEMDADOS;
@@ -88,65 +84,47 @@
     
             switch (op) {
             case 1:
-                //carrega memoria com os dados do arquivo lido
                 carregaMemInst(meminst);
                 break;
-    
             case 2:
-                //carrega memória de dados "arquivo.dat"
                 carregarMemoriaDados(memdados);
                 break;
-    
             case 3:
-                //imprime memoria de instrucoes
                 printMemory(meminst, &instrucao, &dec);
-                
-                //imprime memoria de dados
                 printmemory(memdados);
                 break;
-    
             case 4:
-                //imprime banco de registradores
                 printReg(registrador);
                 break;
-    
             case 5:
                 printMemory(meminst, &instrucao, &dec);
                 printmemory(memdados);
 		printReg(registrador);
-                break;
-    
+		break;
             case 6:
                 printf("Em desenvolvimento.");
                 break;
-    
             case 7:
                 printf("Em desenvolvimento.");
                 break;
-    
             case 8:
                 printf("Em desenvolvimento.");
-    
             case 9:
                 decodificarInstrucao(meminst[pc], &instrucao, &dec);
                 int pc_antes = pc;
                 printInstrucao(&dec);
                 controle(&dec, registrador, memdados, &pc);
-                
                 if(pc == pc_antes){
                 pc++;
                 }
                 break;
-    
             case 10:
                 printf("Em desenvolvimento.");
                 break;
-    
             case 11:
                 printf("VOCE SAIU!!!");
                 break;
             }
-    
         } while(op != 11);
     }
     
@@ -218,31 +196,29 @@
         fclose(arq);
     }
     
-void carregarMemoriaDados(int mem[256])	{
-    char arquivo[20];
-    printf("Nome do arquivo: ");
-    scanf("%s", arquivo);
-    FILE *arq = fopen(arquivo, "r");
-    if (!arq)
-    {
-    perror ("Erro ao abrir arquivo") ;
-    exit (1) ;
-    }
-    int i = 0;
-    while (fscanf(arq, "%d", &mem[i]) != EOF)
-    {
+    void carregarMemoriaDados(int mem[256]) {
+      char arquivo[20];
+      printf("Nome do arquivo: ");
+      scanf("%s", arquivo);
+      FILE *arq = fopen(arquivo, "r");
+      if (!arq) {
+        perror ("Erro ao abrir arquivo") ;
+        exit (1) ;
+      }
+      int i = 0;
+      while (fscanf(arq, "%d", &mem[i]) != EOF) {
         i++;
+      }
     }
-}
 
     void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec)
     {
-        printf("\n############## MEMÓRIA DE INSTRUÇÕES ##############\n");
+        printf("\n############## MEMORIA DE INSTRUCOES ##############\n");
         for (int i = 0; i < 256; i++)
         {
             if (mem[i][0] == '\0')
                 continue;
-            printf("\nIntrucao: %s\n", mem[i]);
+            printf("\nInstrucao: %s\n", mem[i]);
             printf("[%d].  ", i);
             decodificarInstrucao(mem[i], inst, dec);
             printInstrucao(dec);
@@ -251,7 +227,7 @@ void carregarMemoriaDados(int mem[256])	{
     }
 
     void printmemory(int *memdado) {
-        printf("\n############## MEMÓRIA DE DADOS ##############\n\n");
+        printf("\n############## MEMORIA DE DADOS ##############\n\n");
         for(int i=0; i<256; i++) {
             printf("[%d]. %d   ", i, memdado[i]);
             if (i % 8 == 7)
@@ -263,7 +239,7 @@ void carregarMemoriaDados(int mem[256])	{
 
     void printReg(int *reg) {
         for(int i=0; i<8; i++) {
-            printf("REGISTRADOR [%d] - %d\n", i, reg[i]);
+            printf("\nREGISTRADOR [%d] - %d", i, reg[i]);
         }
     }
 
@@ -340,38 +316,31 @@ void carregarMemoriaDados(int mem[256])	{
 
     void controle(Deco *dec, int *reg, int *memdado, int *pc)
     {
-        if (dec->opcode == 11)
-        {
+        if (dec->opcode == 11) {
             reg[dec->rt] = dec->imm;
         }
-        else if (dec->opcode == 15)
-        {
+        else if (dec->opcode == 15) {
             reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0);
         }
-        else if (dec->opcode == 11)
-        {
+        else if (dec->opcode == 11) {
             memdado[ULA(dec->rs, dec->imm, 0)] = reg[dec->rt];
         }  
-        else if (dec->opcode == 4)
-        {
+        else if (dec->opcode == 4) {
             reg[dec->rt] = ULA(reg[dec->rs], dec->imm, 0);
         }
-        else if (dec->opcode == 0 && dec->funct == 0)
-        {
-            reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 0);
-        }
-        else if (dec->opcode == 0 && dec->funct == 2)
-        {
-            reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 2);
-        }
-        else if (dec->opcode == 0 && dec->funct == 4)
-        {
-            reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 4);
-        }
-         else if (dec->opcode == 0 && dec->funct == 5)
-        {
-            reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5);
-        }
+	else if (dec->opcode == 0){
+        	if (dec->funct == 0) {
+            	reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 0);
+        	}
+        	else if (dec->funct == 2) {
+            	reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 2);
+        	}
+        	else if (dec->funct == 4) {
+            	reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 4);
+        	}
+         	else if (dec->funct == 5) {
+            	reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5);
+        	}
         else if (dec->opcode == 8) {
             if (reg[dec->rs] == reg[dec->rt]) {
                 *pc = ULA(*pc, dec->imm, 0);
