@@ -73,6 +73,8 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
 void back(int *pc, int *registrador, int *memdados, Anti *anti);
 void salvarMemDados(int *memdados);
 
+void pilha(Anti *anti, int *qt);
+
 //PROGRAMA PRINCIPAL
 int main() {
 	menu();
@@ -87,7 +89,7 @@ void menu() {
 	MEMDADOS;
 	REGISTRADOR;
 	struct instrucao instrucao;
-	int op, nlinhas, resul, pc = 0;
+	int op, nlinhas, resul, pc = 0, int qt=2;
 
 	do {
 		menuOP();
@@ -120,13 +122,13 @@ void menu() {
 			salvarMemDados(memdados);
 			break;
 		case 8:
-		    	executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
+		    	executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, &qt);
 			break;
 		case 9:
-			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
+			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, &qt);
 			break;
 		case 10:
-			back(&pc, registrador, memdados, &anti);
+			back(&pc, registrador, memdados, &anti, &qt);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -456,16 +458,19 @@ void salvarAssembly(char mem[256][17]) {
     }
 }
 
-void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
+void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
     int i;
-    if(*pc!=0) {
+    if(*pc==1) {
       for(i=0; i<8; i++){
 	anti->ar[i]=registrador[i];
       }
        for(i=0; i<256; i++){
 	anti->amd[i]=memdados[i];
       }
-			 anti->apc=*pc;
+    anti->apc=*pc;
+    }
+    else if {
+     pilha(anti, qt);
     }
     decodificarInstrucao(meminst[*pc], inst, dec);
     int pc_antes = *pc;
@@ -476,13 +481,13 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
    }
  }
 
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
     for(int i=*pc;; i++){
         executaI(meminst, inst, dec, pc,registrador,memdados, anti);
     }
 }
 
-void back(int *pc, int *registrador, int *memdados, Anti *anti) {
+void back(int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
 	int i;
 	for(i=0; i<8; i++){
 	 registrador[i]=anti->ar[i];
@@ -509,4 +514,9 @@ void salvarMemDados(int *memdados) {
             fprintf(arquivo, "%d\n", memdados[i]);
         }
     fclose(arquivo);
+}
+
+void pilha(Anti *anti, int *qt) {
+ Anti *anti = (Anti*)realloc(anti, sizeof(Anti)*qt);
+ *qt++;
 }
