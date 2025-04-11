@@ -497,3 +497,21 @@ void back(int *pc, int *registrador, int *memdados, Anti *anti) {
         }
   *pc=anti->apc;
 }
+
+{
+    FILE *arquivo;
+    char nomeArquivo[20];
+
+    printf("Salvar como: ");
+    scanf("%s", nomeArquivo);
+
+    if ((arquivo = fopen(nomeArquivo, "w")) == NULL)
+    {
+        printf("Permissão Negada!");
+    }
+        for (int i = 0; i < 256; i++)
+        {
+            fprintf(arquivo, "%d\n", memdados[i]);
+        }
+    fclose(arquivo);
+}
