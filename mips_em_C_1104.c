@@ -468,15 +468,13 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 	anti->amd[i]=memdados[i];
       }
     }
-    else{
-     decodificarInstrucao(meminst[*pc], inst, dec);
-     int pc_antes = *pc;
-     printInstrucao(dec);
-     controle(dec, registrador, memdados, pc);
-     if(*pc == pc_antes){
-         (*pc)++;
-     }
-    }
+    decodificarInstrucao(meminst[*pc], inst, dec);
+    int pc_antes = *pc;
+    printInstrucao(dec);
+    controle(dec, registrador, memdados, pc);
+    if(*pc == pc_antes){
+        (*pc)++;
+   }
  }
 
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl) {
