@@ -71,7 +71,7 @@ void salvarAssembly(char mem[256][17]);
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl);
 void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
 void back(int *pc, int *registrador, int *memdados, Anti *anti);
-
+void salvarMemDados(int *memdados);
 //PROGRAMA PRINCIPAL
 int main() {
 	menu();
