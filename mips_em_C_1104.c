@@ -46,7 +46,7 @@ typedef struct {
 } Deco;
 
 typedef struct{
-    int ar[8]
+    int ar[8];
     int amd[256];
 }Anti;
 
@@ -67,6 +67,7 @@ void controle(Deco *inst, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow);
 int extensao6para8bits(int valor);
 void salvarAssembly(char mem[256][17]);
+void back(int *pc, int *registrador, int *memdados, Anti *anti);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -121,7 +122,7 @@ void menu() {
 			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
 			break;
 		case 10:
-			printf("Em desenvolvimento.");
+			back(&pc, registrador, memdados, &anti);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -482,4 +483,14 @@ void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
     for(int i=*pc; i<nl; i++){
         executaI(meminst, inst, dec, pc,registrador,memdados, &anti);
     }
+}
+
+void back(int *pc, int *registrador, int *memdados, Anti *anti) {
+	int i;
+	for(i=0; i<8; i++){
+	 registrador[i]=anti->ar[i];
+	}
+	for(i=0; i<256; i++){
+	memdados[i]=anti->amd[i];
+        }
 }
