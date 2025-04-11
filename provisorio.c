@@ -49,7 +49,7 @@ typedef struct {
 void menu();
 void menuOP();
 int contarlinhas(const char *arquivo);
-void carregaMemInst(char mem[256][17]);
+int carregaMemInst(char mem[256][17]);
 void carregarMemoriaDados(int mem[256]);
 void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec);
 void printmemory(int *memdado);
@@ -86,7 +86,7 @@ void menu() {
 
 		switch (op) {
 		case 1:
-			carregaMemInst(meminst);
+			nlinhas = carregaMemInst(meminst);
 			break;
 		case 2:
 			carregarMemoriaDados(memdados);
@@ -164,12 +164,14 @@ int contarlinhas(const char *arquivo)
 	return contador;
 }
 
-void carregaMemInst(char mem[256][17])
+int carregaMemInst(char mem[256][17])
 {
 	char arquivo[20];
+	int cont;
 	// abre o arquivo em modo leitura
 	printf("Nome do arquivo: ");
 	scanf("%s", arquivo);
+	cont = contarlinhas(arq);
 	FILE *arq = fopen (arquivo, "r");
 	if (!arq)
 	{
@@ -192,6 +194,7 @@ void carregaMemInst(char mem[256][17])
 		i++; // AvanC'a corretamente para a prC3xima posiC'C#o
 	}
 	fclose(arq);
+	return cont;
 }
 
 void carregarMemoriaDados(int mem[256]) {
