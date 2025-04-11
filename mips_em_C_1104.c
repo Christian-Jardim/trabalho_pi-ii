@@ -68,7 +68,7 @@ void controle(Deco *inst, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow);
 int extensao6para8bits(int valor);
 void salvarAssembly(char mem[256][17]);
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl);
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
 void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
 void back(int *pc, int *registrador, int *memdados, Anti *anti);
 void salvarMemDados(int *memdados);
@@ -95,7 +95,7 @@ void menu() {
 
 		switch (op) {
 		case 1:
-			nlinhas = carregaMemInst(meminst);
+			carregaMemInst(meminst);
 			break;
 		case 2:
 			carregarMemoriaDados(memdados);
@@ -175,11 +175,9 @@ int contarlinhas(const char *arquivo)
 int carregaMemInst(char mem[256][17])
 {
 	char arquivo[20];
-	int cont;
 	// abre o arquivo em modo leitura
 	printf("Nome do arquivo: ");
 	scanf("%s", arquivo);
-	cont = contarlinhas(arquivo);
 	FILE *arq = fopen (arquivo, "r");
 	if (!arq)
 	{
@@ -202,7 +200,6 @@ int carregaMemInst(char mem[256][17])
 		i++; // AvanC'a corretamente para a prC3xima posiC'C#o
 	}
 	fclose(arq);
-	return cont;
 }
 
 void carregarMemoriaDados(int mem[256]) {
@@ -481,8 +478,8 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
    }
  }
 
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl) {
-    for(int i=*pc; i<nl; i++){
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
+    for(int i=*pc;; i++){
         executaI(meminst, inst, dec, pc,registrador,memdados, anti);
     }
 }
