@@ -223,8 +223,6 @@ void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec)
 	printf("\n############## MEMORIA DE INSTRUCOES ##############\n");
 	for (int i = 0; i < 256; i++)
 	{
-		if (mem[i][0] == '\0')
-			continue;
 		printf("\nInstrucao: %s\n", mem[i]);
 		printf("[%d].  ", i);
 		decodificarInstrucao(mem[i], inst, dec);
