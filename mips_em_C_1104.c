@@ -116,7 +116,7 @@ void menu() {
 			salvarAssembly(meminst);
 			break;
 		case 7:
-			printf("Em desenvolvimento.");
+			salvarMemDados(memdados);
 			break;
 		case 8:
 		    executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, nlinhas);
