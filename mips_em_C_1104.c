@@ -67,6 +67,8 @@ void controle(Deco *inst, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow);
 int extensao6para8bits(int valor);
 void salvarAssembly(char mem[256][17]);
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl);
+void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
 void back(int *pc, int *registrador, int *memdados, Anti *anti);
 
 //PROGRAMA PRINCIPAL
@@ -458,7 +460,7 @@ void salvarAssembly(char mem[256][17]) {
 }
 
 
-int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
+void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
     int i;
     if(*pc!=0) {
       for(i=0; i<8; i++){
