@@ -458,7 +458,6 @@ void salvarAssembly(char mem[256][17]) {
     }
 }
 
-
 void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
     int i;
     if(*pc!=0) {
@@ -496,7 +495,7 @@ void back(int *pc, int *registrador, int *memdados, Anti *anti) {
   *pc=anti->apc;
 }
 
-{
+void salvarMemDados(int *memdados) {
     FILE *arquivo;
     char nomeArquivo[20];
 
