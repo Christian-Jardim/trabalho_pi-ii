@@ -317,12 +317,9 @@ void printInstrucao(Deco *dec)
 void controle(Deco *dec, int *reg, int *memdado, int *pc)
 {
 	if (dec->opcode == 11) {
-		reg[dec->rt] = dec->imm;
-	}
-	else if (dec->opcode == 15) {
 		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0);
 	}
-	else if (dec->opcode == 11) {
+	else if (dec->opcode == 15) {
 		memdado[ULA(dec->rs, dec->imm, 0)] = reg[dec->rt];
 	}
 	else if (dec->opcode == 4) {
@@ -346,11 +343,12 @@ void controle(Deco *dec, int *reg, int *memdado, int *pc)
 				*pc = ULA(*pc, dec->imm, 0);
 			}
 		}
-		else if (dec->opcode == 2) {
-			*pc = dec->addr;
-		}
+	}
+	else if (dec->opcode == 2) {
+		*pc = dec->addr;
 	}
 }
+
 int ULA(int op1, int op2, int opULA) {
 	if(opULA == 0) {
 		return op1 + op2;
