@@ -62,6 +62,7 @@ void controle(Deco *inst, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow);
 int extensao6para8bits(int valor);
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
+void  executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, int nl);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -109,7 +110,7 @@ void menu() {
 			printf("Em desenvolvimento.");
 			break;
 		case 8:
-			executaP(nlinhas);
+			executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, nlinhas);
 		case 9:
 		    registrador[0]=1;
 		    registrador[1]=2;
@@ -372,17 +373,17 @@ int extensao6para8bits(int valor) {
 }
 
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados) {
-    decodificarInstrucao(meminst[*pc], inst, dec);
-    int pc_antes = *pc;
-    printInstrucao(dec);
-    controle(dec, registrador, memdados, pc);
-    if(*pc == pc_antes){
-        pc++;
-    }
-}
+      decodificarInstrucao(meminst[*pc], inst, dec);
+      int pc_antes = *pc;
+      printInstrucao(dec);
+      controle(dec, registrador, memdados, pc);
+      if(*pc == pc_antes){
+       pc++;
+      }
+ }
 
-void executaP(int nl) {
-    for(int i=0; i<nl; i++){
-        executaI;
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,int nl) {
+    for(int i=*pc; i<nl; i++){
+        executaI(meminst, instrucao, dec, pc,registrador,memdados);
     }
 }
