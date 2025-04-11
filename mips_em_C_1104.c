@@ -481,7 +481,7 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
 
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl) {
     for(int i=*pc; i<nl; i++){
-        executaI(meminst, inst, dec, pc,registrador,memdados, &anti);
+        executaI(meminst, inst, dec, pc,registrador,memdados, anti);
     }
 }
 
