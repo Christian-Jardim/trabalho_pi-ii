@@ -48,6 +48,7 @@ typedef struct {
 typedef struct{
     int ar[8];
     int amd[256];
+		int apc;
 }Anti;
 
 //NOMES DAS FUNCOES
@@ -124,7 +125,7 @@ void menu() {
 			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
 			break;
 		case 10:
-			back(&pc, registrador, memdados, &anti);
+			back(&pc, registrador, memdados, &anti, &pc);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -469,6 +470,7 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
        for(i=0; i<256; i++){
 	anti->amd[i]=memdados[i];
       }
+			 anti->apc=*pc;
     }
     decodificarInstrucao(meminst[*pc], inst, dec);
     int pc_antes = *pc;
@@ -485,7 +487,7 @@ void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
     }
 }
 
-void back(int *pc, int *registrador, int *memdados, Anti *anti) {
+void back(int *pc, int *registrador, int *memdados, Anti *anti, int *pc) {
 	int i;
 	for(i=0; i<8; i++){
 	 registrador[i]=anti->ar[i];
@@ -493,4 +495,5 @@ void back(int *pc, int *registrador, int *memdados, Anti *anti) {
 	for(i=0; i<256; i++){
 	memdados[i]=anti->amd[i];
         }
+  *pc=anti->apc;
 }
