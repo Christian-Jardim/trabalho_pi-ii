@@ -125,7 +125,7 @@ void menu() {
 			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
 			break;
 		case 10:
-			back(&pc, registrador, memdados, &anti, &pc);
+			back(&pc, registrador, memdados, &anti);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -487,7 +487,7 @@ void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
     }
 }
 
-void back(int *pc, int *registrador, int *memdados, Anti *anti, int *pc) {
+void back(int *pc, int *registrador, int *memdados, Anti *anti) {
 	int i;
 	for(i=0; i<8; i++){
 	 registrador[i]=anti->ar[i];
