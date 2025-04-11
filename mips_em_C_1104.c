@@ -298,7 +298,7 @@ void controle(Deco *dec, int *reg, int *memdado, int *pc)
 {
     
   int overflow;
-	else if (dec->opcode == 11) {
+	if (dec->opcode == 11) {
 		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0, &overflow);
 	}
 	else if (dec->opcode == 15) {
@@ -322,15 +322,15 @@ void controle(Deco *dec, int *reg, int *memdado, int *pc)
 			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5, &overflow);
 		}
 	}
-		else if (dec->opcode == 8) {
-			if (reg[dec->rs] == reg[dec->rt]) {
-				*pc = *pc + dec->imm;
-			}
-		}
-		else if (dec->opcode == 2) {
-			*pc = dec->addr;
+	else if (dec->opcode == 8) {
+		if (reg[dec->rs] == reg[dec->rt]) {
+			*pc = *pc + dec->imm;
 		}
 	}
+	else if (dec->opcode == 2) {
+		*pc = dec->addr;
+	}
+}
 	
 int ULA(int op1, int op2, int opULA, int *overflow) {
     
