@@ -72,6 +72,7 @@ void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
 void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
 void back(int *pc, int *registrador, int *memdados, Anti *anti);
 void salvarMemDados(int *memdados);
+
 //PROGRAMA PRINCIPAL
 int main() {
 	menu();
@@ -119,7 +120,7 @@ void menu() {
 			salvarMemDados(memdados);
 			break;
 		case 8:
-		    executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, nlinhas);
+		    	executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
 			break;
 		case 9:
 			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
