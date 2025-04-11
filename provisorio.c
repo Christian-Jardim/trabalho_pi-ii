@@ -373,17 +373,17 @@ int extensao6para8bits(int valor) {
 }
 
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados) {
-      decodificarInstrucao(meminst[*(pc)], inst, dec);
-      int pc_antes = *(pc);
+      decodificarInstrucao(meminst[*pc], inst, dec);
+      int pc_antes = *pc;
       printInstrucao(dec);
       controle(dec, registrador, memdados, pc);
-      if(*(pc) == pc_antes){
-       *(pc)++;
+      if(*pc == pc_antes){
+       (*pc)++;
       }
  }
 
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,int nl) {
-    for(int i=*(pc); i<nl; i++){
+    for(int i=*pc; i<nl; i++){
         executaI(meminst, instrucao, dec, pc,registrador,memdados);
     }
 }
