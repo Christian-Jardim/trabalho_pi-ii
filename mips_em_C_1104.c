@@ -45,6 +45,11 @@ typedef struct {
 	Tipo_Instrucao tipo;
 } Deco;
 
+typedef struct{
+    int ar[8]
+    int amd[256];
+}Anti;
+
 //NOMES DAS FUNCOES
 void menu();
 void menuOP();
@@ -72,6 +77,7 @@ int main() {
 //MENU
 void menu() {
 	Deco dec;
+	Anti anti;
 	MEMINST;
 	MEMDADOS;
 	REGISTRADOR;
@@ -109,10 +115,10 @@ void menu() {
 			printf("Em desenvolvimento.");
 			break;
 		case 8:
-		    executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, nlinhas);
+		    executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, nlinhas);
 			break;
 		case 9:
-			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados);
+			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
 			break;
 		case 10:
 			printf("Em desenvolvimento.");
@@ -451,18 +457,29 @@ void salvarAssembly(char mem[256][17]) {
 }
 
 
-int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados) {
-    decodificarInstrucao(meminst[*pc], inst, dec);
-    int pc_antes = *pc;
-    printInstrucao(dec);
-    controle(dec, registrador, memdados, pc);
-    if(*pc == pc_antes){
-        (*pc)++;
+int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
+    int i;
+    if(*pc!=0) {
+      for(i=0; i<8; i++){
+	anti->ar[i]=registrador[i];
+      }
+       for(i=0; i<256; i++){
+	anti->amd[i]=memdados[i];
+      }
+    }
+    else{
+     decodificarInstrucao(meminst[*pc], inst, dec);
+     int pc_antes = *pc;
+     printInstrucao(dec);
+     controle(dec, registrador, memdados, pc);
+     if(*pc == pc_antes){
+         (*pc)++;
+     }
     }
  }
 
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,int nl) {
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int nl) {
     for(int i=*pc; i<nl; i++){
-        executaI(meminst, inst, dec, pc,registrador,memdados);
+        executaI(meminst, inst, dec, pc,registrador,memdados, &anti);
     }
 }
