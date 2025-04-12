@@ -89,7 +89,7 @@ void menu() {
 	MEMDADOS;
 	REGISTRADOR;
 	struct instrucao instrucao;
-	int op, nlinhas, resul, pc = 0, int qt=2;
+	int op, nlinhas, resul, pc = 0, int qt=0;
 
 	do {
 		menuOP();
@@ -460,17 +460,24 @@ void salvarAssembly(char mem[256][17]) {
 
 void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
     int i;
-    if(*pc==1) {
+    if(*qt==1) {
       for(i=0; i<8; i++){
 	anti->ar[i]=registrador[i];
       }
-       for(i=0; i<256; i++){
+      for(i=0; i<256; i++){
 	anti->amd[i]=memdados[i];
       }
-    anti->apc=*pc;
+       anti->apc=*pc;
     }
-    else if {
+    else if(*qt>1) {
      pilha(anti, qt);
+     for(i=0; i<8; i++){
+	anti->ar[i]=registrador[i];
+      }
+      for(i=0; i<256; i++){
+	anti->amd[i]=memdados[i];
+      }
+       anti[*qt]->apc=*pc;
     }
     decodificarInstrucao(meminst[*pc], inst, dec);
     int pc_antes = *pc;
@@ -478,6 +485,7 @@ void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
     controle(dec, registrador, memdados, pc);
     if(*pc == pc_antes){
         (*pc)++;
+    *qt++;
    }
  }
 
@@ -517,6 +525,5 @@ void salvarMemDados(int *memdados) {
 }
 
 void pilha(Anti *anti, int *qt) {
- Anti *anti = (Anti*)realloc(anti, sizeof(Anti)*qt);
- *qt++;
+ Anti *anti = (Anti*)realloc(anti, sizeof(Anti)*(*qt));
 }
