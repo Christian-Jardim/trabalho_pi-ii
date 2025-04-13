@@ -121,7 +121,7 @@
                 salvarMemDados(memdados);
                 break;
             case 8:
-                executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, &qt);
+                executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti);
                 break;
             case 9:
                 executaI(meminst, &instrucao, &dec, &pc,registrador, memdados, &anti);
