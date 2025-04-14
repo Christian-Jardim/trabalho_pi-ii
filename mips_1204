@@ -375,11 +375,11 @@
     
     // Extensão de 6 bits para 8 bits sinal
     int extensao6para8bits(int valor) {
-        if (valor & 32) {  // Se o 6º bit é 1 (negativo)
-            return valor | 192;  // Estende com 1s: 11111100
+        if (valor & 32) {
+            return valor | 192;
         }
         
-        return valor;  // Positivo, mantém igual
+        return valor;
     }
     
     void salvarAssembly(char mem[256][17]) {
@@ -446,18 +446,7 @@
         fclose(arq);
         printf("Arquivo %s salvo com sucesso!\n", arquivo);
         
-        printf("\nConteúdo do arquivo %s:\n", arquivo);
-        arq = fopen(arquivo, "r"); // Reabre para leitura
-        if (arq) {
-            char linha[100];
-            while (fgets(linha, sizeof(linha), arq)) {
-                printf("%s", linha);
-            }
-        fclose(arq);
-        } else {
-            printf("Erro ao ler o arquivo.\n");
-        }
-    }
+        
      
     void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
         if (strcmp(meminst[*pc], "0000000000000000") == 0) {
