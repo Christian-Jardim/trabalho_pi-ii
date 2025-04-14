@@ -442,15 +442,13 @@
       else
       {
           int i;
-          if(*pc>0) {
-            for(i=0; i<8; i++){
-          anti->ar[i]=registrador[i];
+          for(i=0; i<8; i++){
+           anti->ar[i]=registrador[i];
             }
-            for(i=0; i<256; i++){
-          anti->amd[i]=memdados[i];
+          for(i=0; i<256; i++){
+           anti->amd[i]=memdados[i];
             }
-             anti->apc=*pc;
-          }
+          anti->apc=*pc;
           decodificarInstrucao(meminst[*pc], inst, dec);
           int pc_antes = *pc;
           printInstrucao(dec);
