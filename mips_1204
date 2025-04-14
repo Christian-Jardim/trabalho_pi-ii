@@ -441,11 +441,11 @@
                     fprintf(arq, "j %d\n", dec.addr);
                     break;
             }
-        }
     
         fclose(arq);
         printf("Arquivo %s salvo com sucesso!\n", arquivo);
-        
+        }
+}
         
      
     void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti) {
