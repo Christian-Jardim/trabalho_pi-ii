@@ -35,18 +35,17 @@ typedef struct {
     Tipo_Instrucao tipo;
 } Deco;
 
-typedef struct Pilha {
-	int ra[8];
-	int mda[256];
-	int pca;
-	int tam;
-	Pilha *prox;
-};
+typedef struct Nodo {
+    int rs[8];
+		int mda[256];
+		int pca;
+    struct No* prox;
+} nodo;
 
-typedef struct Descritor{
-	int tam;
-	Descritor *p;
-}
+typedef struct {
+    nodo* topo;
+    int tam;
+} Pilha; 
 
 //NOMES DAS FUNCOES
 void menu();
@@ -67,7 +66,9 @@ void salvarAssembly(char mem[256][17]);
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
 void salvarMemDados(int *memdados);
-
+Pilha* criarPilha();
+void empilhar(Pilha* p, int valor);
+int desempilhar(Pilha* p, int* valorRemovido);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -504,8 +505,32 @@ void salvarMemDados(int *memdados) {
     fclose(arquivo);
 }
 
-void inicia(Pilha *p)
-{
- p->pass->prox = NULL;
- p->tam=0;
+Pilha* criarPilha() {
+    Pilha* p = (Pilha*) malloc(sizeof(Pilha));
+    if (p != NULL) {
+        p->topo = NULL;
+        p->tam = 0;
+    }
+    return p;
+}
+
+void empilhar(Pilha* p, int r, int md, pc) {
+    No* novo = (No*) malloc(sizeof(No));
+    if (novo == NULL) return;
+
+    novo->valor = valor;
+    novo->prox = p->topo;
+    p->topo = novo;
+    p->tamanho++;
+}
+
+int desempilhar(Pilha* p, int* valorRemovido) {
+    if (p->topo == NULL) return 0; // Pilha vazia
+
+    No* temp = p->topo;
+    *valorRemovido = temp->valor;
+    p->topo = temp->prox;
+    free(temp);
+    p->tamanho--;
+    return 1;
 }
