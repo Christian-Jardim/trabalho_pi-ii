@@ -67,7 +67,7 @@ void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc,
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
 void salvarMemDados(int *memdados);
 Pilha* criarPilha();
-void empilhar(Pilha* p, int valor);
+void empilhar(Pilha* p, int *r, int *md, int *pc);
 int desempilhar(Pilha* p, int* valorRemovido);
 
 //PROGRAMA PRINCIPAL
@@ -526,7 +526,7 @@ void empilhar(Pilha* p, int *r, int *md, *pc) {
 }
 
 int desempilhar(Pilha* p, int* valorRemovido) {
-    if (p->topo == NULL) return 0; // Pilha vazia
+    if (p->topo == NULL) return 0;
 
     nodo* temp = p->topo;
     *valorRemovido = temp->valor;
