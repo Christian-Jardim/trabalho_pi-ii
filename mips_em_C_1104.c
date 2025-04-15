@@ -1,13 +1,3 @@
-/*	0000/000 => ADD
-	0000/010 => SUB
-	0000/100 => AND
-	0000/101 => OR
-	0100	 => AADi
-	1011	 => LW
-	1111	 => SW
-	1000	 => BEQ
-	0010	 => J	     */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,11 +35,6 @@ typedef struct {
 	Tipo_Instrucao tipo;
 } Deco;
 
-typedef struct{
-    int ar[8];
-    int amd[256];
-		int apc;
-}Anti;
 
 //NOMES DAS FUNCOES
 void menu();
@@ -66,14 +51,11 @@ int binarioParaDecimal(const char *bin, int sinal);
 void printInstrucao(Deco *dec);
 void controle(Deco *inst, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow);
-int extensao6para8bits(int valor);
 void salvarAssembly(char mem[256][17]);
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
-void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti);
-void back(int *pc, int *registrador, int *memdados, Anti *anti);
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
+int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados);
 void salvarMemDados(int *memdados);
 
-void pilha(Anti *anti, int *qt);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -84,12 +66,11 @@ int main() {
 //MENU
 void menu() {
 	Deco dec;
-	Anti anti;
 	MEMINST;
 	MEMDADOS;
 	REGISTRADOR;
 	struct instrucao instrucao;
-	int op, nlinhas, resul, pc = 0, int qt=0;
+	int op, nlinhas, resul, pc = 0;
 
 	do {
 		menuOP();
@@ -114,6 +95,7 @@ void menu() {
 			printMemory(meminst, &instrucao, &dec);
 			printmemory(memdados);
 			printReg(registrador);
+			printf("\n\nPC: %d", pc);
 			break;
 		case 6:
 			salvarAssembly(meminst);
@@ -122,13 +104,12 @@ void menu() {
 			salvarMemDados(memdados);
 			break;
 		case 8:
-		    	executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, &qt);
+			executaP(meminst, &instrucao, &dec, &pc,registrador,memdados);
 			break;
 		case 9:
-			executaI(meminst, &instrucao, &dec, &pc,registrador,memdados, &anti, &qt);
+			executaI(meminst, &instrucao, &dec, &pc,registrador, memdados);
 			break;
 		case 10:
-			back(&pc, registrador, memdados, &anti, &qt);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -153,8 +134,7 @@ void menuOP() {
 	printf("11 - Sair\n\n");
 }
 
-int contarlinhas(const char *arquivo)
-{
+int contarlinhas(const char *arquivo) {
 	char c;
 	int contador=1;
 	// abre o arquivo em modo leitura
@@ -175,12 +155,13 @@ int contarlinhas(const char *arquivo)
 	return contador;
 }
 
-int carregaMemInst(char mem[256][17])
-{
+int carregaMemInst(char mem[256][17]) {
 	char arquivo[20];
+	int cont;
 	// abre o arquivo em modo leitura
 	printf("Nome do arquivo: ");
 	scanf("%s", arquivo);
+	cont = contarlinhas(arquivo);
 	FILE *arq = fopen (arquivo, "r");
 	if (!arq)
 	{
@@ -203,6 +184,7 @@ int carregaMemInst(char mem[256][17])
 		i++; // AvanC'a corretamente para a prC3xima posiC'C#o
 	}
 	fclose(arq);
+	return cont;
 }
 
 void carregarMemoriaDados(int mem[256]) {
@@ -220,8 +202,7 @@ void carregarMemoriaDados(int mem[256]) {
 	}
 }
 
-void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec)
-{
+void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec) {
 	printf("\n############## MEMORIA DE INSTRUCOES ##############\n");
 	for (int i = 0; i < 256; i++)
 	{
@@ -251,8 +232,7 @@ void printReg(int *reg) {
 }
 
 // decodifica a instrucao e armazena os valores na struct do tipo Deco ja no formato int
-void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec)
-{
+void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec) {
 	copiarBits(bin, inst->opcode, 0, 4);    // Copia os 4 bits do opcode (4 bits)
 	dec->opcode = binarioParaDecimal(inst->opcode, 0);
 	copiarBits(bin, inst->rs, 4, 3);        // Copia os 3 bits do rs
@@ -265,14 +245,12 @@ void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec)
 	dec->funct = binarioParaDecimal(inst->funct, 0);
 	copiarBits(bin, inst->imm, 10, 6);      // Copia os 6 bits do imm
 	dec->imm = binarioParaDecimal(inst->imm, 1);
-	dec->imm = extensao6para8bits(dec->imm);
 	copiarBits(bin, inst->addr, 9, 7);     // Copia os 7 bits do addr
 	dec->addr = binarioParaDecimal(inst->addr, 0);
 }
 
 // copia os bits da instruC'C#o para cada campo da struct instrucao
-void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho)
-{
+void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho) {
 	strncpy(destino, instrucao + inicio, tamanho); // Copia os bits desejados
 	destino[tamanho] = '\0';  // Adiciona o terminador de string
 }
@@ -280,31 +258,55 @@ void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho)
 // converte de binario para decimal
 int binarioParaDecimal(const char *bin, int sinal) {
 	int valor = (int)strtol(bin, NULL, 2);
-    int bits = strlen(bin);
-    
-    if (sinal && bits > 0 && (valor & (1 << (bits - 1)))) {
-        valor = valor - (1 << bits);
-    }
-    return valor;
+	int bits = strlen(bin);
+
+	if (sinal && bits > 0 && (valor & (1 << (bits - 1)))) {
+		valor = valor - (1 << bits);
+	}
+	return valor;
 }
 
-// FunC'C#o para imprimir a instruC'C#o
-void printInstrucao(Deco *dec)
-{
-	printf("\nopcode: %d  ", dec->opcode);
-	printf("rs: %d  ", dec->rs);
-	printf("rt: %d  ", dec->rt);
-	printf("rd: %d  ", dec->rd);
-	printf("funct: %d  ", dec->funct);
-	printf("imm: %d  ", dec->imm);
-	printf("addr: %d", dec->addr);
+// Funcao para imprimir a instrucao
+void printInstrucao(Deco *dec) {
+	switch (dec->opcode) {
+	case 0: // Tipo R (add, sub, and, or)
+		switch (dec->funct) {
+		case 0:
+			printf("add $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			break;
+		case 2:
+			printf("sub $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			break;
+		case 4:
+			printf("and $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			break;
+		case 5:
+			printf("or $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			break;
+		}
+		break;
+	case 4: // addi
+		printf("addi $%d, $%d, %d\n", dec->rt, dec->rs, dec->imm);
+		break;
+	case 11: // lw
+		printf("lw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
+		break;
+	case 15: // sw
+		printf("sw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
+		break;
+	case 8: // beq
+		printf("beq $%d, $%d, %d\n", dec->rs, dec->rt, dec->imm);
+		break;
+	case 2: // j
+		printf("j %d\n", dec->addr);
+		break;
+	}
 }
 
-void controle(Deco *dec, int *reg, int *memdado, int *pc)
-{
-    
-    int overflow=0;
-    
+void controle(Deco *dec, int *reg, int *memdado, int *pc) {
+
+	int overflow=0;
+
 	if (dec->opcode == 11) {
 		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0, &overflow);
 	}
@@ -328,202 +330,146 @@ void controle(Deco *dec, int *reg, int *memdado, int *pc)
 			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5, &overflow);
 		}
 	}
-		else if (dec->opcode == 8) {
-			if (reg[dec->rs] == reg[dec->rt]) {
-				*pc = *pc + dec->imm + 1;
-			}
-		}
-		else if (dec->opcode == 2) {
-			*pc = dec->addr;
+	else if (dec->opcode == 8) {
+		if (reg[dec->rs] == reg[dec->rt]) {
+			*pc = *pc + dec->imm + 1;
 		}
 	}
-	
+	else if (dec->opcode == 2) {
+		*pc = dec->addr;
+	}
+}
+
 int ULA(int op1, int op2, int opULA, int *overflow) {
-    
-    int resultado;
-    *overflow = 0;
-    
+
+	int resultado;
+	*overflow = 0;
+
 	if(opULA == 0) {
 		resultado = op1 + op2;
-		
+
 		if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
-            *overflow = 1;
-            printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
-        }
+			*overflow = 1;
+			printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
 	}
-	
+
 	else if(opULA == 2) {
 		resultado = op1 - op2;
-		
+
 		if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
-            *overflow = 1;
-            printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+			*overflow = 1;
+			printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
 	}
-	
 	else if(opULA == 4) {
 		resultado = op1 & op2;
 	}
 	else if(opULA == 5) {
 		resultado = op1 | op2;
 	}
-	
-	return resultado & 0xFF; // Máscara para 8 bits
-}
-}
-
-
-// Extensão de 6 bits para 8 bits sinal
-int extensao6para8bits(int valor) {
-    if (valor & 0x20) {  // Se o 6º bit é 1 (negativo)
-        return valor | 0xC0;  // Estende com 1s: 11111100
-    }
-    
-    return valor;  // Positivo, mantém igual
+	return resultado & 0xFF; // MC!scara para 8 bits
 }
 
 void salvarAssembly(char mem[256][17]) {
-    
-    char arquivo[20];
-    
-    printf("Nome do arquivo .asm: ");
-    scanf("%s", arquivo);
+	char arquivo[20];
 
-    FILE *arq = fopen(arquivo, "w");
-    if (!arq) {
-        perror("Erro ao criar arquivo");
-        return;
-    }
+	printf("Nome do arquivo .asm: ");
+	scanf("%s", arquivo);
 
-    for (int i = 0; i < 256; i++) {
-        if (mem[i][0] == '\0') continue; // Ignora posições vazias
-
-        struct instrucao inst;
-        Deco dec;
-        decodificarInstrucao(mem[i], &inst, &dec);
-
-        // Converte para assembly e escreve no arquivo
-        switch (dec.opcode) {
-            case 0: // Tipo R (add, sub, and, or)
-                switch (dec.funct) {
-                    case 0: fprintf(arq, "add $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
-                    break;
-                    
-                    case 2: fprintf(arq, "sub $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
-                    break;
-                    
-                    case 4: fprintf(arq, "and $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
-                    break;
-                    
-                    case 5: fprintf(arq, "or $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
-                    break;
-                }
-                
-                break;
-            
-            case 4: // addi
-                fprintf(arq, "addi $%d, $%d, %d\n", dec.rt, dec.rs, dec.imm);
-                break;
-            
-            case 11: // lw
-                fprintf(arq, "lw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
-                break;
-            
-            case 15: // sw
-                fprintf(arq, "sw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
-                break;
-            
-            case 8: // beq
-                fprintf(arq, "beq $%d, $%d, %d\n", dec.rs, dec.rt, dec.imm);
-                break;
-            
-            case 2: // j
-                fprintf(arq, "j %d\n", dec.addr);
-                break;
-        }
-    }
-
-    fclose(arq);
-    printf("Arquivo %s salvo com sucesso!\n", arquivo);
-    
-    printf("\nConteúdo do arquivo %s:\n", arquivo);
-    arq = fopen(arquivo, "r"); // Reabre para leitura
-    if (arq) {
-        char linha[100];
-        while (fgets(linha, sizeof(linha), arq)) {
-            printf("%s", linha);
-        }
-    fclose(arq);
-    } else {
-        printf("Erro ao ler o arquivo.\n");
-    }
-}
-
-void executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
-    int i;
-    if(*qt==1) {
-      for(i=0; i<8; i++){
-	anti->ar[i]=registrador[i];
-      }
-      for(i=0; i<256; i++){
-	anti->amd[i]=memdados[i];
-      }
-       anti->apc=*pc;
-    }
-    else if(*qt>1) {
-     pilha(anti, qt);
-     for(i=0; i<8; i++){
-	anti->ar[i]=registrador[i];
-      }
-      for(i=0; i<256; i++){
-	anti->amd[i]=memdados[i];
-      }
-       anti[*qt]->apc=*pc;
-    }
-    decodificarInstrucao(meminst[*pc], inst, dec);
-    int pc_antes = *pc;
-    printInstrucao(dec);
-    controle(dec, registrador, memdados, pc);
-    if(*pc == pc_antes){
-        (*pc)++;
-    *qt++;
-   }
- }
-
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
-    for(int i=*pc;; i++){
-        executaI(meminst, inst, dec, pc,registrador,memdados, anti);
-    }
-}
-
-void back(int *pc, int *registrador, int *memdados, Anti *anti, int *qt) {
-	int i;
-	for(i=0; i<8; i++){
-	 registrador[i]=anti->ar[i];
+	FILE *arq = fopen(arquivo, "w");
+	if (!arq) {
+		perror("Erro ao criar arquivo");
+		return;
 	}
-	for(i=0; i<256; i++){
-	memdados[i]=anti->amd[i];
-        }
-  *pc=anti->apc;
+
+	for (int i = 0; i < 256; i++) {
+		if (mem[i][0] == '\0') continue; // Ignora posiC'C5es vazias
+		struct instrucao inst;
+		Deco dec;
+		decodificarInstrucao(mem[i], &inst, &dec);
+
+		// Converte para assembly e escreve no arquivo
+		switch (dec.opcode) {
+		case 0: // Tipo R (add, sub, and, or)
+			switch (dec.funct) {
+			case 0:
+				fprintf(arq, "add $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				break;
+			case 2:
+				fprintf(arq, "sub $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				break;
+			case 4:
+				fprintf(arq, "and $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				break;
+			case 5:
+				fprintf(arq, "or $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				break;
+			}
+			break;
+		case 4: // addi
+			fprintf(arq, "addi $%d, $%d, %d\n", dec.rt, dec.rs, dec.imm);
+			break;
+		case 11: // lw
+			fprintf(arq, "lw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
+			break;
+		case 15: // sw
+			fprintf(arq, "sw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
+			break;
+		case 8: // beq
+			fprintf(arq, "beq $%d, $%d, %d\n", dec.rs, dec.rt, dec.imm);
+			break;
+		case 2: // j
+			fprintf(arq, "j %d\n", dec.addr);
+			break;
+		}
+	}
+	fclose(arq);
+	printf("Arquivo %s salvo com sucesso!\n", arquivo);
+}
+
+int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados) {
+	if (strcmp(meminst[*pc], "0000000000000000") == 0) {
+		printf("Fim do programa!");
+		return 1;
+	}
+	else
+	{
+		decodificarInstrucao(meminst[*pc], inst, dec);
+		int pc_antes = *pc;
+		printInstrucao(dec);
+		printf("\n");
+		controle(dec, registrador, memdados, pc);
+		if(*pc == pc_antes) {
+			(*pc)++;
+		}
+	}
+}
+
+void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados) {
+	int j;
+	for(int i=*pc;; i++) {
+		j = executaI(meminst, inst, dec, pc, registrador, memdados);
+		if(j==1) {
+			break;
+		}
+	}
 }
 
 void salvarMemDados(int *memdados) {
-    FILE *arquivo;
-    char nomeArquivo[20];
+	FILE *arquivo;
+	char nomeArquivo[20];
 
-    printf("Salvar como: ");
-    scanf("%s", nomeArquivo);
+	printf("Salvar como: ");
+	scanf("%s", nomeArquivo);
 
-    if ((arquivo = fopen(nomeArquivo, "w")) == NULL)
-    {
-        printf("Permissão Negada!");
-    }
-        for (int i = 0; i < 256; i++)
-        {
-            fprintf(arquivo, "%d\n", memdados[i]);
-        }
-    fclose(arquivo);
-}
-
-void pilha(Anti *anti, int *qt) {
- Anti *anti = (Anti*)realloc(anti, sizeof(Anti)*(*qt));
+	if ((arquivo = fopen(nomeArquivo, "w")) == NULL)
+	{
+		printf("PermissC#o Negada!");
+	}
+	for (int i = 0; i < 256; i++)
+	{
+		fprintf(arquivo, "%d\n", memdados[i]);
+	}
+	fclose(arquivo);
 }
