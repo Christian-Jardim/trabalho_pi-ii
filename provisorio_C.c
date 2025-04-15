@@ -514,8 +514,9 @@ Pilha* criarPilha() {
     return p;
 }
 
-void empilhar(Pilha* p, int r, int md, pc) {
-    No* novo = (No*) malloc(sizeof(No));
+void empilhar(Pilha* p, int *r, int *md, *pc) {
+    nodo* novo = (nodo*) malloc(sizeof(nodo));
+		int i;
     if (novo == NULL) return;
 
     novo->valor = valor;
@@ -527,7 +528,7 @@ void empilhar(Pilha* p, int r, int md, pc) {
 int desempilhar(Pilha* p, int* valorRemovido) {
     if (p->topo == NULL) return 0; // Pilha vazia
 
-    No* temp = p->topo;
+    nodo* temp = p->topo;
     *valorRemovido = temp->valor;
     p->topo = temp->prox;
     free(temp);
