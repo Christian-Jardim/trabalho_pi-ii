@@ -560,7 +560,7 @@ ItemPilha desempilhar(Pilha* p, int *r, int *m, int *pc) {
     }
     *pc = p->itens[p->capacidade].pca;
     free(p->itens[p->capacidade].ra);
-		free(p->itens[p->capacidade].mda);
-		free(p->itens[p->capacidade].pc); 
+free(p->itens[p->capacidade].mda);
+free(p->itens[p->capacidade].pca); 
     p->capacidade--;
 }
