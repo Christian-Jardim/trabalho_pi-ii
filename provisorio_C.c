@@ -36,15 +36,15 @@ typedef struct {
 } Deco;
 
 typedef struct {
-    int ra[8];   // Ponteiro para o vetor que será armazenado na pilha
-    int mda[256];  // Tamanho do vetor
+    int ra[8];
+    int mda[256];
     int pca;
 } ItemPilha;
 
 typedef struct {
-    ItemPilha *itens;    // Ponteiro para os itens (vetores) da pilha
-    int topo;            // Índice do topo da pilha
-    int capacidade;      // Capacidade atual da pilha
+    ItemPilha *itens;
+    int topo;            
+    int capacidade;      
 } Pilha;
 
 //NOMES DAS FUNCOES
@@ -559,6 +559,8 @@ ItemPilha desempilhar(Pilha* p, int *r, int *m, int *pc) {
         m[i] = p->itens[p->capacidade].mda[i];
     }
     *pc = p->itens[p->capacidade].pca;
-    free(p->itens[p->capacidade]);
+    free(p->itens[p->capacidade].ra);
+		free(p->itens[p->capacidade].mda);
+		free(p->itens[p->capacidade].pc); 
     p->capacidade--;
 }
