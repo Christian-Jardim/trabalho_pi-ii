@@ -68,8 +68,8 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 void salvarMemDados(int *memdados);
 void inicializar(Pilha* p, int capacidade_inicial);
 void redimensionar(Pilha* p);
-void empilhar(Pilha* p, int* vetor, int tamanho);
-ItemPilha desempilhar(Pilha* p);
+void empilhar(Pilha* p, int *r, int *m, int *pc);
+ItemPilha desempilhar(Pilha* p, int *r, int *m, int *pc);
 
 //PROGRAMA PRINCIPAL
 int main() {
@@ -122,10 +122,10 @@ void menu() {
 			executaP(meminst, &instrucao, &dec, &pc, registrador, memdados, &p);
 			break;
 		case 9:
-			executaI(meminst, &instrucao, &dec, &pc,registrador, memdados, &p);
+			executaI(meminst, &instrucao, &dec, &pc, registrador, memdados, &p);
 			break;
 		case 10:
-		    
+		    desempilhar(&p, registrador, memdados, &pc);
 			break;
 		case 11:
 			printf("VOCE SAIU!!!");
@@ -136,7 +136,7 @@ void menu() {
 
 //FUNCOES IMPLEMENTADAS
 void menuOP() {
-	printf("\n\n *** MENU *** \n");
+	printf("\n *** MENU *** \n");
 	printf("1 - Carregar memoria de instrucoes\n");
 	printf("2 - Carregar memoria de dados\n");
 	printf("3 - Imprimir memorias\n");
@@ -294,41 +294,41 @@ void printInstrucao(Deco *dec)
 	case 0: // Tipo R (add, sub, and, or)
 		switch (dec->funct) {
 		case 0:
-			printf("add $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			printf("\nadd $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
 			break;
 
 		case 2:
-			printf("sub $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			printf("\nsub $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
 			break;
 
 		case 4:
-			printf("and $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			printf("\nand $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
 			break;
 
 		case 5:
-			printf("or $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
+			printf("\nor $%d, $%d, $%d\n", dec->rd, dec->rs, dec->rt);
 			break;
 		}
 		break;
 
 	case 4: // addi
-		printf("addi $%d, $%d, %d\n", dec->rt, dec->rs, dec->imm);
+		printf("\naddi $%d, $%d, %d\n", dec->rt, dec->rs, dec->imm);
 		break;
 
 	case 11: // lw
-		printf("lw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
+		printf("\nlw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
 		break;
 
 	case 15: // sw
-		printf("sw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
+		printf("\nsw $%d, %d($%d)\n", dec->rt, dec->imm, dec->rs);
 		break;
 
 	case 8: // beq
-		printf("beq $%d, $%d, %d\n", dec->rs, dec->rt, dec->imm);
+		printf("\nbeq $%d, $%d, %d\n", dec->rs, dec->rt, dec->imm);
 		break;
 
 	case 2: // j
-		printf("j %d\n", dec->addr);
+		printf("\nj %d\n", dec->addr);
 		break;
 	}
 }
@@ -480,6 +480,7 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 	}
 	else
 	{
+	    empilhar(p, registrador, memdados, pc);
 		decodificarInstrucao(meminst[*pc], inst, dec);
 		int pc_antes = *pc;
 		printInstrucao(dec);
@@ -494,7 +495,7 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados, Pilha *p) {
 	int j;
 	for(int i=*pc;; i++) {
-		j = executaI(meminst, inst, dec, pc, registrador, memdados, pilha);
+		j = executaI(meminst, inst, dec, pc, registrador, memdados, p);
 		if(j==1) {
 			break;
 		}
@@ -525,43 +526,39 @@ void inicializar(Pilha* p, int capacidade_inicial) {
         printf("Erro ao alocar memória para a pilha.\n");
         exit(1);
     }
-    p->topo = -1;
     p->capacidade = capacidade_inicial;
 }
 
 void redimensionar(Pilha* p) {
-    int nova_capacidade = p->capacidade++;
-    p->itens = (ItemPilha*) realloc(p->itens, nova_capacidade * sizeof(ItemPilha));
+    p->capacidade++;
+    p->itens = (ItemPilha*) realloc(p->itens, p->capacidade * sizeof(ItemPilha));
     if (p->itens == NULL) {
         printf("Erro ao realocar memória para a pilha.\n");
         exit(1);
     }
-    p->capacidade = nova_capacidade;
 }
 
-void empilhar(Pilha* p, int* vetor, int *r, int ) {
-    for (int i = 0; i < 8; i++) {
-        p->itens[p->topo].ra[i] = r[i];
+void empilhar(Pilha* p, int *r, int *m, int *pc) {
+    int i;
+    for (i = 0; i < 8; i++) {
+        p->itens[p->capacidade].ra[i] = r[i];
     }
-    
-    p->topo++;
-    p->itens[p->topo].vetor = (int*) malloc(tamanho * sizeof(int));
-    if (p->itens[p->topo].vetor == NULL) {
-        printf("Erro ao alocar memória para o vetor.\n");
-        exit(1);
+    for (i = 0; i < 256; i++) {
+        p->itens[p->capacidade].mda[i] = m[i];
     }
-
-    // Copia os valores do vetor passado para a pilha
-    for (int i = 0; i < tamanho; i++) {
-        p->itens[p->topo].vetor[i] = vetor[i];
-    }
-
-    p->itens[p->topo].tamanho = tamanho;
-    printf("Vetor de tamanho %d empilhado.\n", tamanho);
+    p->itens[p->capacidade].pca = *pc;
+    redimensionar(p);
 }
 
-ItemPilha desempilhar(Pilha* p) {
-    ItemPilha item = p->itens[p->topo];
-   p->topo--;
-    return item;
+ItemPilha desempilhar(Pilha* p, int *r, int *m, int *pc) {
+    int i;
+    for (i = 0; i < 8; i++) {
+        r[i] = p->itens[p->capacidade].ra[i];
+    }
+    for (i = 0; i < 256; i++) {
+        m[i] = p->itens[p->capacidade].mda[i];
+    }
+    *pc = p->itens[p->capacidade].pca;
+    free(p->itens[p->capacidade]);
+    p->capacidade--;
 }
