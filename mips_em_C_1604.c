@@ -60,7 +60,7 @@ void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
 int binarioParaDecimal(const char *bin, int sinal);
 void printInstrucao(Deco *dec);
 void controle(Deco *inst, int *reg, int *memdado, int *pc);
-int ULA(int op1, int op2, int opULA, int *overflow);
+int ULA(int op1, int op2, int opULA, int *overflow, int *flag);
 void salvarAssembly(char mem[256][17]);
 void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p);
 int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p);
@@ -320,72 +320,84 @@ void printInstrucao(Deco *dec) {
 }
 
 void controle(Deco *dec, int *reg, int *memdado, int *pc) {
-
+	int flag=0;
 	int overflow=0;
 
 	if (dec->opcode == 11) {
-		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0, &overflow);
+		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0, &overflow,&flag);
 	}
 	else if (dec->opcode == 15) {
-		memdado[ULA(dec->rs, dec->imm, 0, &overflow)] = reg[dec->rt];
+		memdado[ULA(dec->rs, dec->imm, 0, &overflow,&flag)] = reg[dec->rt];
 	}
 	else if (dec->opcode == 4) {
-		reg[dec->rt] = ULA(reg[dec->rs], dec->imm, 0, &overflow);
+		reg[dec->rt] = ULA(reg[dec->rs], dec->imm, 0, &overflow,&flag);
 	}
 	else if (dec->opcode == 0) {
 		if (dec->funct == 0) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 0, &overflow);
+			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 0, &overflow,&flag);
 		}
 		else if (dec->funct == 2) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 2, &overflow);
+			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 2, &overflow,&flag);
 		}
 		else if (dec->funct == 4) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 4, &overflow);
+			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 4, &overflow,&flag);
 		}
 		else if (dec->funct == 5) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5, &overflow);
+			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5, &overflow,&flag);
 		}
 	}
 	else if (dec->opcode == 8) {
-		if (reg[dec->rs] == reg[dec->rt]) {
-			*pc = *pc + dec->imm + 1;
-		}
-	}
-	else if (dec->opcode == 2) {
-		*pc = dec->addr;
-	}
+              flag = ULA(reg[dec->rs], reg[dec->rt], 8, &overflow, &flag);
+              if(flag==1){
+                  *pc = *pc + dec->imm;
+                  printf("BEQ: rs(%d) == rt(%d) -> PC = %d\n", reg[dec->rs], reg[dec->rt], *pc);
+              }
+              else{
+                  *pc = *pc + 1;
+                  printf("BEQ: rs(%d) != rt(%d) -> PC = %d\n", reg[dec->rs], reg[dec->rt], *pc);
+              }
+          }
+        else if (dec->opcode == 2) {
+            *pc = dec->addr;
+        }
 }
 
-int ULA(int op1, int op2, int opULA, int *overflow) {
+int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
+    int resultado;
+    *flag = 0;
+    *overflow = 0;
 
-	int resultado;
-	*overflow = 0;
+    if(opULA == 0) {
+        resultado = op1 + op2;
 
-	if(opULA == 0) {
-		resultado = op1 + op2;
+        if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
+            *overflow = 1;
+            printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+        }
+    }
+    else if(opULA == 2) {
+        resultado = op1 - op2;
 
-		if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
-			*overflow = 1;
-			printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
-		}
-	}
-
-	else if(opULA == 2) {
-		resultado = op1 - op2;
-
-		if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
-			*overflow = 1;
-			printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
-		}
-	}
-
-	else if(opULA == 4) {
-		resultado = op1 & op2;
-	}
-	else if(opULA == 5) {
-		resultado = op1 | op2;
-	}
-	return resultado & 0xFF; // MC!scara para 8 bits
+        if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
+            *overflow = 1;
+            printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+        }
+    }
+    else if(opULA == 4) {
+        resultado = op1 & op2;
+    }
+    else if(opULA == 5) {
+        resultado = op1 | op2;
+    }
+    else if(opULA==8){
+          if(op1 == op2){
+              *flag = 1;
+          }
+          if(op1 != op2){
+              *flag = 0;
+          }
+      }
+    return resultado & 0xFF; // Mascara para 8 bits
 }
 
 void salvarAssembly(char mem[256][17]) {
