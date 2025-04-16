@@ -78,13 +78,13 @@ int main() {
 //MENU
 void menu() {
   Instrucao in;
-	Deco dec;
+	Instrucao in;
+	Decodificador d;
 	Pilha p;
 	inicia_pilha(&p);
 	MEMINST;
 	MEMDADOS;
 	REGISTRADOR;
-	struct instrucao instrucao;
 	int op, nlinhas, resul, pc = 0;
 
 	do {
