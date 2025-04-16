@@ -461,13 +461,10 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 	{
 		empilha(p,registrador,memdados, pc);
 		decodificarInstrucao(meminst[*pc], inst, dec);
-		int pc_antes = *pc;
 		printInstrucao(dec);
 		printf("\n");
 		controle(dec, registrador, memdados, pc);
-		if(*pc == pc_antes) {
-			(*pc)++;
-		}
+		*pc = somador(*pc,1);
 	}
 }
 
