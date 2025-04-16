@@ -33,7 +33,7 @@ typedef struct {
 	int imm;
 	int addr;
 	Tipo_Instrucao tipo;
-} Deco;
+} Decodificador;
 
 typedef struct Nodo {
 	int ra[8];
@@ -77,8 +77,7 @@ int main() {
 
 //MENU
 void menu() {
-  Instrucao in;
-	Instrucao in;
+    Instrucao in;
 	Decodificador d;
 	Pilha p;
 	inicia_pilha(&p);
@@ -324,20 +323,20 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
 
 	int overflow=0;
 
-	if (dec->opcode == 11) {
+	if (d->opcode == 11) {
 		reg[d->rt] = ULA(reg[d->rs], memdado[d->imm], 0, &overflow);
 	}
-	else if (dec->opcode == 15) {
+	else if (d->opcode == 15) {
 		memdado[ULA(d->rs, d->imm, 0, &overflow)] = reg[d->rt];
 	}
-	else if (dec->opcode == 4) {
+	else if (d->opcode == 4) {
 		reg[d->rt] = ULA(reg[d->rs], d->imm, 0, &overflow);
 	}
 	else if (d->opcode == 0) {
 		if (d->funct == 0) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 0, &overflow);
 		}
-		else if (dec->funct == 2) {
+		else if (d->funct == 2) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 2, &overflow);
 		}
 		else if (d->funct == 4) {
