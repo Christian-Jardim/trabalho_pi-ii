@@ -17,7 +17,7 @@
 #define REGISTRADOR int registrador[8] = {0}
 
 //STRUCTS e ENUMS
-typedef enum {
+typedef enum Tipo{
 	Tipo_R=0,
 	Tipo_I=1,
 	Tipo_J=2,
@@ -34,7 +34,7 @@ struct instrucao {
 	char addr[8];
 };
 
-typedef struct {
+typedef struct Deco{
 	int opcode;
 	int rs;
 	int rt;
@@ -138,7 +138,7 @@ void menu() {
 			step_back(&p, registrador, memdados, &pc);
 			break;
 		case 11:
-			printf("VOCE SAIU!!!");
+			printf("\nVoce saiu!!!");
 			break;
 		}
 	} while(op != 11);
