@@ -1,3 +1,13 @@
+/* 0000/000 => ADD
+   0000/010 => SUB
+   0000/100 => AND
+   0000/101 => OR
+   0100	    => AADi
+   1011	    => LW
+   1111	    => SW
+   1000	    => BEQ
+   0010	    => J    */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
