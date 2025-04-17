@@ -17,7 +17,7 @@
 #define REGISTRADOR int registrador[8] = {0}
 
 //STRUCTS e ENUMS
-typedef enum tipo{
+typedef enum tipo {
 	Tipo_R=0,
 	Tipo_I=1,
 	Tipo_J=2,
@@ -34,7 +34,7 @@ typedef struct instrucao {
 	char addr[8];
 } Instrucao;
 
-typedef struct decodificador{
+typedef struct decodificador {
 	int opcode;
 	int rs;
 	int rt;
@@ -45,7 +45,7 @@ typedef struct decodificador{
 	Tipo_Instrucao tipo;
 } Decodificador;
 
-typedef struct nodo {
+typedef struct Nodo {
 	int ra[8];
 	int mda[256];
 	int pca;
@@ -81,7 +81,6 @@ int limite_back(Pilha *p);
 
 //PROGRAMA PRINCIPAL
 int main() {
-	menu();
 	Instrucao in;
 	Decodificador d;
 	Pilha p;
@@ -236,7 +235,7 @@ void printReg(int *reg) {
 // decodifica a instrucao e armazena os valores na struct do tipo Deco ja no formato int
 void decodificarInstrucao(const char *bin, Instrucao *in, Decodificador *d) {
 	copiarBits(bin, in->opcode, 0, 4);    // Copia os 4 bits do opcode (4 bits)
-	d->opcode = binarioParaDecimal(inst->opcode, 0);
+	d->opcode = binarioParaDecimal(in->opcode, 0);
 	copiarBits(bin, in->rs, 4, 3);        // Copia os 3 bits do rs
 	d->rs = binarioParaDecimal(in->rs, 0);
 	copiarBits(bin, in->rt, 7, 3);        // Copia os 3 bits do rt
@@ -284,7 +283,7 @@ void printInstrucao(Decodificador *d) {
 			printf("\nand $%d, $%d, $%d", d->rd, d->rs, d->rt);
 			break;
 		case 5:
-			printf("\nor $%d, $%d, $%d", dec->rd, d->rs, d->rt);
+			printf("\nor $%d, $%d, $%d", d->rd, d->rs, d->rt);
 			break;
 		}
 		break;
@@ -313,71 +312,71 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
 	if (d->opcode == 11) {
 		reg[d->rt] = ULA(reg[d->rs], memdado[d->imm], 0, &overflow,&flag);
 	}
-	else if (dec->opcode == 15) {
+	else if (d->opcode == 15) {
 		memdado[ULA(d->rs, d->imm, 0, &overflow,&flag)] = reg[d->rt];
 	}
-	else if (dec->opcode == 4) {
+	else if (d->opcode == 4) {
 		reg[d->rt] = ULA(reg[d->rs], d->imm, 0, &overflow,&flag);
 	}
 	else if (d->opcode == 0) {
 		if (d->funct == 0) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 0, &overflow,&flag);
 		}
-		else if (dec->funct == 2) {
+		else if (d->funct == 2) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 2, &overflow,&flag);
 		}
 		else if (d->funct == 4) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 4, &overflow,&flag);
 		}
-		else if (dec->funct == 5) {
+		else if (d->funct == 5) {
 			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 5, &overflow,&flag);
 		}
 	}
 	else if (d->opcode == 8) {
-        flag = ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag);
-        if(flag==1){
-            *pc = somador(*pc,d->imm);
-        }
-        else{
-            *pc = *pc + 1;
-        }
-    }
-    else if (d->opcode == 2) {
-        *pc = d->addr;
-    }
+		flag = ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag);
+		if(flag==1) {
+			*pc = somador(*pc,d->imm);
+		}
+		else {
+			*pc = *pc + 1;
+		}
+	}
+	else if (d->opcode == 2) {
+		*pc = d->addr;
+	}
 }
 
 int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
-    int resultado;
-    *flag = 0;
-    *overflow = 0;
+	int resultado;
+	*flag = 0;
+	*overflow = 0;
 
-    if(opULA == 0) {
-        resultado = op1 + op2;
+	if(opULA == 0) {
+		resultado = op1 + op2;
 
-        if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
-            *overflow = 1;
-            printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
-        }
-    }
-    else if(opULA == 2) {
-        resultado = op1 - op2;
+		if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
+			*overflow = 1;
+			printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
+	}
+	else if(opULA == 2) {
+		resultado = op1 - op2;
 
-        if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
-            *overflow = 1;
-            printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
-        }
-    }
-    else if(opULA == 4) {
-        resultado = op1 & op2;
-    }
-    else if(opULA == 5) {
-        resultado = op1 | op2;
-    }
-    else if(opULA==8){
-        return !(ULA(op1,op2,5,overflow,flag) & 0);
-    }
-    return resultado & 0xFF; // Mascara para 8 bits
+		if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
+			*overflow = 1;
+			printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
+	}
+	else if(opULA == 4) {
+		resultado = op1 & op2;
+	}
+	else if(opULA == 5) {
+		resultado = op1 | op2;
+	}
+	else if(opULA==8) {
+		return !(ULA(op1,op2,5,overflow,flag) & 0);
+	}
+	return resultado & 0xFF; // Mascara para 8 bits
 }
 
 void salvarAssembly(char mem[256][17]) {
@@ -404,7 +403,7 @@ void salvarAssembly(char mem[256][17]) {
 		case 0: // Tipo R (add, sub, and, or)
 			switch (d.funct) {
 			case 0:
-				fprintf(arq, "add $%d, $%d, $%d\n", dec.rd, d.rs, d.rt);
+				fprintf(arq, "add $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
 				break;
 			case 2:
 				fprintf(arq, "sub $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
@@ -454,7 +453,7 @@ int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, in
 	}
 }
 
-void executaP(char meminst[256][17], Instrucao *in, Decodificador *d int *pc, int *registrador, int *memdados,Pilha *p) {
+void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
 	while(executaI(meminst, in, d, pc, registrador, memdados,p)!=1);
 }
 
