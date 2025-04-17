@@ -17,14 +17,14 @@
 #define REGISTRADOR int registrador[8] = {0}
 
 //STRUCTS e ENUMS
-typedef enum Tipo{
+typedef enum tipo{
 	Tipo_R=0,
 	Tipo_I=1,
 	Tipo_J=2,
 	Tipo_OUTROS=3
 } Tipo_Instrucao;
 
-struct instrucao {
+typedef struct instrucao {
 	char opcode[5];
 	char rs[4];
 	char rt[4];
@@ -32,9 +32,9 @@ struct instrucao {
 	char funct[4];
 	char imm[7];
 	char addr[8];
-};
+} Instrucao;
 
-typedef struct Deco{
+typedef struct decodificador{
 	int opcode;
 	int rs;
 	int rt;
@@ -43,36 +43,35 @@ typedef struct Deco{
 	int imm;
 	int addr;
 	Tipo_Instrucao tipo;
-} Deco;
+} Decodificador;
 
-typedef struct Nodo {
+typedef struct nodo {
 	int ra[8];
 	int mda[256];
 	int pca;
 	struct Nodo *prox;
 } Nodo;
 
-typedef struct Pilha {
+typedef struct pilha {
 	Nodo *topo;
 } Pilha;
 
 //NOMES DAS FUNCOES
 void menu();
-void menuOP();
 void carregaMemInst(char mem[256][17]);
 void carregarMemoriaDados(int mem[256]);
-void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec);
+void printMemory(char mem[256][17], Instrucao *in, Decodificador *d);
 void printmemory(int *memdado);
 void printReg(int *reg);
-void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec);
+void decodificarInstrucao(const char *bin, Instrucao *in, Decodificador *d);
 void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
 int binarioParaDecimal(const char *bin, int sinal);
-void printInstrucao(Deco *dec);
-void controle(Deco *inst, int *reg, int *memdado, int *pc);
+void printInstrucao(Decodificador *d);
+void controle(Decodificador *in, int *reg, int *memdado, int *pc);
 int ULA(int op1, int op2, int opULA, int *overflow, int *flag);
 void salvarAssembly(char mem[256][17]);
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p);
-int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p);
+void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
+int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
 void salvarMemDados(int *memdados);
 void inicia_pilha(Pilha *p);
 int step_back(Pilha *p, int *r, int *md, int *pc);
@@ -83,22 +82,17 @@ int limite_back(Pilha *p);
 //PROGRAMA PRINCIPAL
 int main() {
 	menu();
-	return 0;
-}
-
-//MENU
-void menu() {
-	Deco dec;
+	Instrucao in;
+	Decodificador d;
 	Pilha p;
 	inicia_pilha(&p);
 	MEMINST;
 	MEMDADOS;
 	REGISTRADOR;
-	struct instrucao instrucao;
 	int op, nlinhas, resul, pc = 0;
 
 	do {
-		menuOP();
+		menu();
 		printf("Sua escolha: ");
 		scanf("%d", &op);
 
@@ -110,14 +104,14 @@ void menu() {
 			carregarMemoriaDados(memdados);
 			break;
 		case 3:
-			printMemory(meminst, &instrucao, &dec);
+			printMemory(meminst, &in, &d);
 			printmemory(memdados);
 			break;
 		case 4:
 			printReg(registrador);
 			break;
 		case 5:
-			printMemory(meminst, &instrucao, &dec);
+			printMemory(meminst, &in, &d);
 			printmemory(memdados);
 			printReg(registrador);
 			printf("\n\nPC: %d", pc);
@@ -129,10 +123,10 @@ void menu() {
 			salvarMemDados(memdados);
 			break;
 		case 8:
-			executaP(meminst, &instrucao, &dec, &pc,registrador,memdados, &p);
+			executaP(meminst, &in, &d, &pc,registrador,memdados, &p);
 			break;
 		case 9:
-			executaI(meminst, &instrucao, &dec, &pc,registrador, memdados,&p);
+			executaI(meminst, &in, &d, &pc,registrador, memdados,&p);
 			break;
 		case 10:
 			step_back(&p, registrador, memdados, &pc);
@@ -142,10 +136,13 @@ void menu() {
 			break;
 		}
 	} while(op != 11);
+	return 0;
 }
 
 //FUNCOES IMPLEMENTADAS
-void menuOP() {
+
+//MENU
+void menu() {
 	printf("\n\n *** MENU *** \n");
 	printf("1 - Carregar memoria de instrucoes\n");
 	printf("2 - Carregar memoria de dados\n");
@@ -207,14 +204,14 @@ void carregarMemoriaDados(int mem[256]) {
 	}
 }
 
-void printMemory(char mem[256][17], struct instrucao *inst, Deco *dec) {
+void printMemory(char mem[256][17], Instrucao *in, Decodificador *d) {
 	printf("\n############## MEMORIA DE INSTRUCOES ##############\n");
 	for (int i = 0; i < 256; i++)
 	{
 		printf("\nInstrucao: %s\n", mem[i]);
 		printf("[%d].  ", i);
-		decodificarInstrucao(mem[i], inst, dec);
-		printInstrucao(dec);
+		decodificarInstrucao(mem[i], in, d);
+		printInstrucao(d);
 		//printf("\n");
 	}
 }
@@ -237,21 +234,21 @@ void printReg(int *reg) {
 }
 
 // decodifica a instrucao e armazena os valores na struct do tipo Deco ja no formato int
-void decodificarInstrucao(const char *bin, struct instrucao *inst, Deco *dec) {
-	copiarBits(bin, inst->opcode, 0, 4);    // Copia os 4 bits do opcode (4 bits)
-	dec->opcode = binarioParaDecimal(inst->opcode, 0);
-	copiarBits(bin, inst->rs, 4, 3);        // Copia os 3 bits do rs
-	dec->rs = binarioParaDecimal(inst->rs, 0);
-	copiarBits(bin, inst->rt, 7, 3);        // Copia os 3 bits do rt
-	dec->rt = binarioParaDecimal(inst->rt, 0);
-	copiarBits(bin, inst->rd, 10, 3);       // Copia os 3 bits do rd
-	dec->rd = binarioParaDecimal(inst->rd, 0);
-	copiarBits(bin, inst->funct, 13, 3);    // Copia os 3 bits do funct
-	dec->funct = binarioParaDecimal(inst->funct, 0);
-	copiarBits(bin, inst->imm, 10, 6);      // Copia os 6 bits do imm
-	dec->imm = binarioParaDecimal(inst->imm, 1);
-	copiarBits(bin, inst->addr, 9, 7);     // Copia os 7 bits do addr
-	dec->addr = binarioParaDecimal(inst->addr, 0);
+void decodificarInstrucao(const char *bin, Instrucao *in, Decodificador *d) {
+	copiarBits(bin, in->opcode, 0, 4);    // Copia os 4 bits do opcode (4 bits)
+	d->opcode = binarioParaDecimal(inst->opcode, 0);
+	copiarBits(bin, in->rs, 4, 3);        // Copia os 3 bits do rs
+	d->rs = binarioParaDecimal(in->rs, 0);
+	copiarBits(bin, in->rt, 7, 3);        // Copia os 3 bits do rt
+	d->rt = binarioParaDecimal(in->rt, 0);
+	copiarBits(bin, in->rd, 10, 3);       // Copia os 3 bits do rd
+	d->rd = binarioParaDecimal(in->rd, 0);
+	copiarBits(bin, in->funct, 13, 3);    // Copia os 3 bits do funct
+	d->funct = binarioParaDecimal(in->funct, 0);
+	copiarBits(bin, in->imm, 10, 6);      // Copia os 6 bits do imm
+	d->imm = binarioParaDecimal(in->imm, 1);
+	copiarBits(bin, in->addr, 9, 7);     // Copia os 7 bits do addr
+	d->addr = binarioParaDecimal(in->addr, 0);
 }
 
 // copia os bits da instruC'C#o para cada campo da struct instrucao
@@ -273,80 +270,80 @@ int binarioParaDecimal(const char *bin, int sinal) {
 }
 
 // Funcao para imprimir a instrucao
-void printInstrucao(Deco *dec) {
-	switch (dec->opcode) {
+void printInstrucao(Decodificador *d) {
+	switch (d->opcode) {
 	case 0: // Tipo R (add, sub, and, or)
-		switch (dec->funct) {
+		switch (d->funct) {
 		case 0:
-			printf("\nadd $%d, $%d, $%d", dec->rd, dec->rs, dec->rt);
+			printf("\nadd $%d, $%d, $%d", d->rd, d->rs, d->rt);
 			break;
 		case 2:
-			printf("\nsub $%d, $%d, $%d", dec->rd, dec->rs, dec->rt);
+			printf("\nsub $%d, $%d, $%d", d->rd, d->rs, d->rt);
 			break;
 		case 4:
-			printf("\nand $%d, $%d, $%d", dec->rd, dec->rs, dec->rt);
+			printf("\nand $%d, $%d, $%d", d->rd, d->rs, d->rt);
 			break;
 		case 5:
-			printf("\nor $%d, $%d, $%d", dec->rd, dec->rs, dec->rt);
+			printf("\nor $%d, $%d, $%d", dec->rd, d->rs, d->rt);
 			break;
 		}
 		break;
 	case 4: // addi
-		printf("\naddi $%d, $%d, %d", dec->rt, dec->rs, dec->imm);
+		printf("\naddi $%d, $%d, %d", d->rt, d->rs, d->imm);
 		break;
 	case 11: // lw
-		printf("\nlw $%d, %d($%d)", dec->rt, dec->imm, dec->rs);
+		printf("\nlw $%d, %d($%d)", d->rt, d->imm, d->rs);
 		break;
 	case 15: // sw
-		printf("\nsw $%d, %d($%d)", dec->rt, dec->imm, dec->rs);
+		printf("\nsw $%d, %d($%d)", d->rt, d->imm, d->rs);
 		break;
 	case 8: // beq
-		printf("\nbeq $%d, $%d, %d", dec->rs, dec->rt, dec->imm);
+		printf("\nbeq $%d, $%d, %d", d->rs, d->rt, d->imm);
 		break;
 	case 2: // j
-		printf("\nj %d", dec->addr);
+		printf("\nj %d", d->addr);
 		break;
 	}
 }
 
-void controle(Deco *dec, int *reg, int *memdado, int *pc) {
+void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
 	int flag=0;
 	int overflow=0;
 
-	if (dec->opcode == 11) {
-		reg[dec->rt] = ULA(reg[dec->rs], memdado[dec->imm], 0, &overflow,&flag);
+	if (d->opcode == 11) {
+		reg[d->rt] = ULA(reg[d->rs], memdado[d->imm], 0, &overflow,&flag);
 	}
 	else if (dec->opcode == 15) {
-		memdado[ULA(dec->rs, dec->imm, 0, &overflow,&flag)] = reg[dec->rt];
+		memdado[ULA(d->rs, d->imm, 0, &overflow,&flag)] = reg[d->rt];
 	}
 	else if (dec->opcode == 4) {
-		reg[dec->rt] = ULA(reg[dec->rs], dec->imm, 0, &overflow,&flag);
+		reg[d->rt] = ULA(reg[d->rs], d->imm, 0, &overflow,&flag);
 	}
-	else if (dec->opcode == 0) {
-		if (dec->funct == 0) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 0, &overflow,&flag);
+	else if (d->opcode == 0) {
+		if (d->funct == 0) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 0, &overflow,&flag);
 		}
 		else if (dec->funct == 2) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 2, &overflow,&flag);
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 2, &overflow,&flag);
 		}
-		else if (dec->funct == 4) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 4, &overflow,&flag);
+		else if (d->funct == 4) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 4, &overflow,&flag);
 		}
 		else if (dec->funct == 5) {
-			reg[dec->rd] = ULA(reg[dec->rs], reg[dec->rt], 5, &overflow,&flag);
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 5, &overflow,&flag);
 		}
 	}
-	else if (dec->opcode == 8) {
-        flag = ULA(reg[dec->rs], reg[dec->rt], 8, &overflow, &flag);
+	else if (d->opcode == 8) {
+        flag = ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag);
         if(flag==1){
-            *pc = somador(*pc,dec->imm);
+            *pc = somador(*pc,d->imm);
         }
         else{
             *pc = *pc + 1;
         }
     }
-    else if (dec->opcode == 2) {
-        *pc = dec->addr;
+    else if (d->opcode == 2) {
+        *pc = d->addr;
     }
 }
 
@@ -399,41 +396,41 @@ void salvarAssembly(char mem[256][17]) {
 		if (mem[i][0] == '\0') continue; // Ignora posiC'C5es vazias
 
 		struct instrucao inst;
-		Deco dec;
-		decodificarInstrucao(mem[i], &inst, &dec);
+		Decodificador d;
+		decodificarInstrucao(mem[i], &inst, &d);
 
 		// Converte para assembly e escreve no arquivo
-		switch (dec.opcode) {
+		switch (d.opcode) {
 		case 0: // Tipo R (add, sub, and, or)
-			switch (dec.funct) {
+			switch (d.funct) {
 			case 0:
-				fprintf(arq, "add $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				fprintf(arq, "add $%d, $%d, $%d\n", dec.rd, d.rs, d.rt);
 				break;
 			case 2:
-				fprintf(arq, "sub $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				fprintf(arq, "sub $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
 				break;
 			case 4:
-				fprintf(arq, "and $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				fprintf(arq, "and $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
 				break;
 			case 5:
-				fprintf(arq, "or $%d, $%d, $%d\n", dec.rd, dec.rs, dec.rt);
+				fprintf(arq, "or $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
 				break;
 			}
 			break;
 		case 4: // addi
-			fprintf(arq, "addi $%d, $%d, %d\n", dec.rt, dec.rs, dec.imm);
+			fprintf(arq, "addi $%d, $%d, %d\n", d.rt, d.rs, d.imm);
 			break;
 		case 11: // lw
-			fprintf(arq, "lw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
+			fprintf(arq, "lw $%d, %d($%d)\n", d.rt, d.imm, d.rs);
 			break;
 		case 15: // sw
-			fprintf(arq, "sw $%d, %d($%d)\n", dec.rt, dec.imm, dec.rs);
+			fprintf(arq, "sw $%d, %d($%d)\n", d.rt, d.imm, d.rs);
 			break;
 		case 8: // beq
-			fprintf(arq, "beq $%d, $%d, %d\n", dec.rs, dec.rt, dec.imm);
+			fprintf(arq, "beq $%d, $%d, %d\n", d.rs, d.rt, d.imm);
 			break;
 		case 2: // j
-			fprintf(arq, "j %d\n", dec.addr);
+			fprintf(arq, "j %d\n", d.addr);
 			break;
 		}
 	}
@@ -441,7 +438,7 @@ void salvarAssembly(char mem[256][17]) {
 	printf("Arquivo %s salvo com sucesso!\n", arquivo);
 }
 
-int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p) {
+int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
 	if (strcmp(meminst[*pc], "0000000000000000") == 0) {
 		printf("\nFim do programa!");
 		return 1;
@@ -449,16 +446,16 @@ int executaI(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, 
 	else
 	{
 		empilha(p,registrador,memdados, pc);
-		decodificarInstrucao(meminst[*pc], inst, dec);
-		printInstrucao(dec);
+		decodificarInstrucao(meminst[*pc], in, d);
+		printInstrucao(d);
 		printf("\n");
 		*pc = somador(*pc,1);
-		controle(dec, registrador, memdados, pc);
+		controle(d, registrador, memdados, pc);
 	}
 }
 
-void executaP(char meminst[256][17], struct instrucao *inst, Deco *dec, int *pc, int *registrador, int *memdados,Pilha *p) {
-	while(executaI(meminst, inst, dec, pc, registrador, memdados,p)!=1);
+void executaP(char meminst[256][17], Instrucao *in, Decodificador *d int *pc, int *registrador, int *memdados,Pilha *p) {
+	while(executaI(meminst, in, d, pc, registrador, memdados,p)!=1);
 }
 
 void salvarMemDados(int *memdados) {
