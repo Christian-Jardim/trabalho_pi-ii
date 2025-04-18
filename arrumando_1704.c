@@ -60,7 +60,7 @@
    void controle(Decodificador *in, int *reg, int *memdado, int *pc);
    int ULA(int op1, int op2, int opULA, int *overflow, int *flag);
    void salvarAssembly(char mem[256][17]);
-   void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p, int nl);
+   void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
    int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
    void salvarMemDados(int *memdados);
    void inicia_pilha(Pilha *p);
@@ -87,7 +87,7 @@
            printf("\n");
            switch (op) {
            case 1:
-               nl = carregaMemInst(meminst);
+               carregaMemInst(meminst);
                break;
            case 2:
                carregarMemoriaDados(memdados);
@@ -112,7 +112,7 @@
                salvarMemDados(memdados);
                break;
            case 8:
-               executaP(meminst, &in, &d, &pc,registrador,memdados, &p,nl);
+               executaP(meminst, &in, &d, &pc,registrador,memdados, &p);
                break;
            case 9:
                executaI(meminst, &in, &d, &pc,registrador, memdados,&p);
@@ -145,33 +145,10 @@
        printf("10 - Volta uma instrucao\n");
        printf("11 - Sair\n\n");
    }
-   
-     int contarlinhas(const char *arquivo)
-  {
-      char c;
-      int contador=0;
-      // abre o arquivo em modo leitura
-      FILE *arq = fopen (arquivo, "r");
-      if (!arq)
-      {
-          perror ("Erro ao abrir arquivo");
-          exit (1) ;
-      }
-      // Percorre o arquivo e conta as quebras de linha
-      while (fread(&c, sizeof(char), 1, arq) == 1)
-      {
-          if (c == '\n') {
-              contador++;
-          }
-      }
-      fclose(arq);
-      return contador;
-  }
 
    // carrega memoria de instrucoes a partir de um "arquivo.mem"
    int carregaMemInst(char mem[256][17]) {
        char arquivo[20];
-       int cont;
        // abre o arquivo em modo leitura
        printf("Nome do arquivo: ");
        scanf("%s", arquivo);
@@ -198,7 +175,6 @@
            i++; // AvanC'a corretamente para a prC3xima posiC'C#o
        }
        fclose(arq);
-       return cont;
    }
    
    // carrega memoria de dados a partir de um "arquivo.dat"
@@ -475,7 +451,7 @@
    }
    
    // executa todo o programa
-   void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p, int nl) {
+   void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
       int i=0;
 			while(executaI(meminst, in, d, pc, registrador, memdados,p)!=1 || i<nl) {
 				i++;
