@@ -84,7 +84,7 @@
            menu();
            printf("Sua escolha: ");
            scanf("%d", &op);
-           printf("\n")
+           printf("\n");
            switch (op) {
            case 1:
                carregaMemInst(meminst);
