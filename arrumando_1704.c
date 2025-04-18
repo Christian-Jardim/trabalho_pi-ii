@@ -452,9 +452,14 @@
    
    // executa todo o programa
    void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
-      int i=0;
-			while(executaI(meminst, in, d, pc, registrador, memdados,p)!=1 || i<nl) {
-				i++;
+       int i,j;
+        for(i=0;i<256;i++){
+           j = executaI(meminst, in, d, pc, registrador, memdados,p);
+           if(j==1){
+               break;
+           }
+           i++;
+        }
    }
    
    // salva memoria de dados em um "arquivo.dat"
