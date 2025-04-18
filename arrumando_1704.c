@@ -498,22 +498,25 @@
    
    // funcao de execucao do step back
    int step_back(Pilha *p, int *r, int *md, int *pc) {
-       int i;
-   
-       if(limite_back(p)==1) {
-           return 1;
-       }
-       else {
-           for(i=0; i<8; i++) {
-               r[i]=p->topo->ra[i];
-           }
-           for(i=0; i<8; i++) {
-               md[i]=p->topo->mda[i];
-           }
-           *pc=p->topo->pca;
-           p->topo=p->topo->prox;
-       }
-   }
+        int i;
+        Nodo *remover;
+
+        if(limite_back(p) == 1) {
+            return 1;
+        } else {
+            remover = p->topo;
+            for(i = 0; i < 8; i++) {
+                r[i] = remover->ra[i];
+            }
+            for(i = 0; i < 8; i++) {
+                md[i] = remover->mda[i];
+            }
+            *pc = remover->pca;
+            p->topo = remover->prox;
+            free(remover);
+            return 0;
+    }
+}
    
    // somador
    int somador(int op1, int op2) {
