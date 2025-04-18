@@ -499,12 +499,13 @@
    // funcao de execucao do step back
    int step_back(Pilha *p, int *r, int *md, int *pc) {
         int i;
-        Nodo *remover;
+        Nodo *remover = (Nodo*)malloc(sizeof(Nodo)); ;
 
         if(limite_back(p) == 1) {
             return 1;
         } else {
             remover = p->topo;
+            free(p->topo);
             for(i = 0; i < 8; i++) {
                 r[i] = remover->ra[i];
             }
