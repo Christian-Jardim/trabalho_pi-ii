@@ -84,7 +84,7 @@
            menu();
            printf("Sua escolha: ");
            scanf("%d", &op);
-   
+           printf("\n")
            switch (op) {
            case 1:
                carregaMemInst(meminst);
@@ -121,7 +121,7 @@
                step_back(&p, registrador, memdados, &pc);
                break;
            case 11:
-               printf("\nVoce saiu!!!");
+               printf("Voce saiu!!!");
                break;
            }
        } while(op != 11);
