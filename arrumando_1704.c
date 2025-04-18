@@ -149,7 +149,7 @@
      int contarlinhas(const char *arquivo)
   {
       char c;
-      int contador=1;
+      int contador=0;
       // abre o arquivo em modo leitura
       FILE *arq = fopen (arquivo, "r");
       if (!arq)
