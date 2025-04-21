@@ -448,13 +448,12 @@ int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, in
 
 // executa todo o programa
 void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
-        int i,j;
-        for(i=0; i<256; i++) {
+        int j;
+        while(*pc < 256) {
                 j = executaI(meminst, in, d, pc, registrador, memdados,p);
                 if(j==1) {
                         break;
                 }
-                i++;
         }
 }
 
