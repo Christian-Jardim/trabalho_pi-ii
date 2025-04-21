@@ -432,7 +432,6 @@ void salvarAssembly(char mem[256][17]) {
 // executa uma instrucao
 int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
         if (strcmp(meminst[*pc], "0000000000000000") == 0) {
-                printf("\nFim do programa!");
                 return 1;
         }
         else
@@ -455,6 +454,7 @@ void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, i
                         break;
                 }
         }
+	printf("\nFim do programa!");
 }
 
 // salva memoria de dados em um "arquivo.dat"
