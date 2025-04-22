@@ -326,7 +326,7 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
                 }
         }
         else if (d->opcode == 8) {
-                flag = !(ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag) & 0;
+                flag = !(ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag) & 0);
                 if(flag==1) {
                         *pc = somador(*pc,d->imm);
                 }
