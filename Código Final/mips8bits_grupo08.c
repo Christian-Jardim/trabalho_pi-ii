@@ -326,7 +326,7 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
                 }
         }
         else if (d->opcode == 8) {
-                flag = ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag);
+                flag = !(ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag) & 0;
                 if(flag==1) {
                         *pc = somador(*pc,d->imm);
                 }
@@ -365,7 +365,7 @@ int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
                 resultado = op1 | op2;
         }
         else if(opULA==8) {
-                return !(ULA(op1,op2,5,overflow,flag) & 0);
+                return ULA(op1,op2,5,overflow,flag);
         }
         return resultado & 0xFF; // Mascara para 8 bits
 }
