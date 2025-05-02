@@ -326,8 +326,8 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
                 }
         }
         else if (d->opcode == 8) {
-                flag = !(ULA(reg[d->rs], reg[d->rt], 8, &overflow, &flag) & 0);
-                if(flag==1) {
+                flag = ULA(reg[d->rs], reg[d->rt], 2, &overflow, &flag);
+                if(flag==0) {
                         *pc = somador(*pc,d->imm);
                 }
         }
@@ -363,9 +363,6 @@ int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
         }
         else if(opULA == 5) {
                 resultado = op1 | op2;
-        }
-        else if(opULA==8) {
-                return ULA(op1,op2,5,overflow,flag);
         }
         return resultado & 0xFF; // Mascara para 8 bits
 }
@@ -433,7 +430,7 @@ void salvarAssembly(char mem[256][17]) {
 int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
         if (strcmp(meminst[*pc], "0000000000000000") == 0 || *pc > 255) {
                 printf("\nFim do programa!");
-		return 1;
+                return 1;
         }
         else
         {
