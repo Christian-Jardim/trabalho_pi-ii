@@ -366,7 +366,7 @@ int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
 	else if(opULA == 5) {
 		resultado = op1 | op2;
 	}
-	return resultado & 0xFF; // Mascara para 8 bits
+	return resultado;
 }
 
 // funcao para conversao das instrucoes para assembly e salvar "arquivo.asm"
