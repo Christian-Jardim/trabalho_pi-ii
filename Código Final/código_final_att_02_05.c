@@ -365,7 +365,7 @@ int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
                 resultado = op1 | op2;
         }
         else if (opULA == 8) {
-                if (op1 == op2) {
+                if (ULA(op1,op2,2,overflow,flag) == 0) {
                     *flag = 1;
                 }
                 else {
