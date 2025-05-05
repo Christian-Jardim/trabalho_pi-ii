@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MEM char mem[256][17] = {{'\0'}}
+#define MEMINST char meminst[256][17] = {{'\0'}}
+#define MEMDADOS int memdados[256] = {0}
 #define REGISTRADOR int registrador[8] = {0}
-#define PC int pc = 0
 
 //STRUCTS e ENUMS
 typedef enum tipo {
@@ -37,7 +37,7 @@ typedef struct decodificador {
 
 typedef struct Nodo {
 	int ra[8];
-	int da[256];
+	int mda[256];
 	int pca;
 	struct Nodo *prox;
 } Nodo;
@@ -46,27 +46,39 @@ typedef struct pilha {
 	Nodo *topo;
 } Pilha;
 
-void inicia_pilha(Pilha *p);
+//ASSINATURA DAS FUNCOES
 void menu();
-int carrega_mem(char mem[256][17]);
-void print_mem_dat(char mem[256][17]);
-void print_mem_inst(char mem[256][17]);
+int carregaMemInst(char mem[256][17]);
+void carregarMemoriaDados(int mem[256]);
+void printMemory(char mem[256][17], Instrucao *in, Decodificador *d);
+void printmemory(int *memdado);
 void printReg(int *reg);
-int executa_step(char mem[256][17],Instrucao *in,Decodificador *d,int *pc,int *registrador,Pilha *p,int est);
-void empilha(Pilha *p, int *r,char m, int *pc);
 void decodificarInstrucao(const char *bin, Instrucao *in, Decodificador *d);
 void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho);
 int binarioParaDecimal(const char *bin, int sinal);
+void printInstrucao(Decodificador *d);
+void controle(Decodificador *in, int *reg, int *memdado, int *pc);
+int ULA(int op1, int op2, int opULA, int *overflow, int *flag);
+void salvarAssembly(char mem[256][17]);
+void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
+int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p);
+void salvarMemDados(int *memdados);
+void inicia_pilha(Pilha *p);
+int step_back(Pilha *p, int *r, int *md, int *pc);
+void empilha(Pilha *p, int *r, int *md, int *pc);
+int somador(int op1, int op2);
+int limite_back(Pilha *p);
 
+// PROGRAMA PRINCIPAL
 int main() {
 	Instrucao in;
 	Decodificador d;
 	Pilha p;
-	MEM;
-	REGISTRADOR;
-	PC;
-	int op,resul,est = 0;
 	inicia_pilha(&p);
+	MEMINST;
+	MEMDADOS;
+	REGISTRADOR;
+	int op, nl, resul, pc = 0;
 
 	do {
 		menu();
@@ -75,54 +87,67 @@ int main() {
 		printf("\n");
 		switch (op) {
 		case 1:
-			carrega_mem(mem);
+			carregaMemInst(meminst);
 			break;
 		case 2:
-			print_mem_inst(mem);
-			print_mem_dat(mem);
+			carregarMemoriaDados(memdados);
 			break;
 		case 3:
-			printReg(registrador);
+			printMemory(meminst, &in, &d);
+			printmemory(memdados);
 			break;
 		case 4:
-			print_mem_inst(mem);
-			print_mem_dat(mem);
+			printReg(registrador);
+			break;
+		case 5:
+			printMemory(meminst, &in, &d);
+			printmemory(memdados);
 			printReg(registrador);
 			printf("\n\nPC: %d", pc);
 			break;
-		case 5:
-			est = executa_step(mem,&in,&d,&pc,registrador,&p,est);
-			break;
 		case 6:
+			salvarAssembly(meminst);
+			break;
+		case 7:
+			salvarMemDados(memdados);
+			break;
+		case 8:
+			executaP(meminst, &in, &d, &pc,registrador,memdados, &p);
+			break;
+		case 9:
+			executaI(meminst, &in, &d, &pc,registrador, memdados,&p);
+			break;
+		case 10:
+			step_back(&p, registrador, memdados, &pc);
+			break;
+		case 11:
 			printf("Voce saiu!!!");
 			break;
-		default:
-			printf("Opcao invalida!");
 		}
-	} while(op != 6);
+	} while(op != 11);
 	return 0;
 }
 
-void inicia_pilha(Pilha *p) {
-	p->topo=NULL;
-}
+//FUNCOES IMPLEMENTADAS
 
+//MENU
 void menu() {
 	printf("\n\n *** MENU *** \n");
-	printf("1 - Carregar memoria");
-	printf("2 - Imprimir memoria\n");
-	printf("3 - Imprimir banco de registradores\n");
-	printf("4 - Imprimir todo o simulador\n");
-	printf("5 - Executar step\n");
-	printf("6 - Executar programa\n");
-	printf("7 - Salvar .asm\n");
-	printf("8 - Salvar .dat\n");
-	printf("9 - Volta uma instrucao\n");
-	printf("10 - Sair\n\n");
+	printf("1 - Carregar memoria de instrucoes\n");
+	printf("2 - Carregar memoria de dados\n");
+	printf("3 - Imprimir memorias\n");
+	printf("4 - Imprimir banco de registradores\n");
+	printf("5 - Imprimir todo o simulador\n");
+	printf("6 - Salvar .asm\n");
+	printf("7 - Salvar .dat\n");
+	printf("8 - Executar programa\n");
+	printf("9 - Executar instrucao\n");
+	printf("10 - Volta uma instrucao\n");
+	printf("11 - Sair\n\n");
 }
 
 // carrega memoria de instrucoes a partir de um "arquivo.mem"
-int carrega_mem(char mem[256][17]) {
+int carregaMemInst(char mem[256][17]) {
 	char arquivo[20];
 	// abre o arquivo em modo leitura
 	printf("Nome do arquivo: ");
@@ -148,27 +173,43 @@ int carrega_mem(char mem[256][17]) {
 		mem[i][16] = '\0'; // Garante terminaC'C#o de string
 		i++; // AvanC'a corretamente para a prC3xima posiC'C#o
 	}
-	while (fscanf(arq, "%s", &mem[i]) != EOF) {
-		i++;
-	}
 	fclose(arq);
 }
 
+// carrega memoria de dados a partir de um "arquivo.dat"
+void carregarMemoriaDados(int mem[256]) {
+	char arquivo[20];
+	printf("Nome do arquivo: ");
+	scanf("%s", arquivo);
+	FILE *arq = fopen(arquivo, "r");
+	if (!arq) {
+		perror ("Erro ao abrir arquivo") ;
+		exit (1) ;
+	}
+	int i = 0;
+	while (fscanf(arq, "%d", &mem[i]) != EOF) {
+		i++;
+	}
+}
+
 // imprime memoria de instrucoes
-void print_mem_inst(char mem[256][17]) {
-	printf("\n############## INSTRUCOES ##############\n");
+void printMemory(char mem[256][17], Instrucao *in, Decodificador *d) {
+	printf("\n############## MEMORIA DE INSTRUCOES ##############\n");
 	for (int i = 0; i < 256; i++)
 	{
-		printf("\n[%d]: %s\n", i,mem[i]);
+		printf("\nInstrucao: %s\n", mem[i]);
+		printf("[%d].  ", i);
+		decodificarInstrucao(mem[i], in, d);
+		printInstrucao(d);
 		printf("\n");
 	}
 }
 
 // imprime memoria de dados
-void print_mem_dat(char mem[256][17]) {
-	printf("\n############## DADOS ##############\n\n");
-	for(int i=256; i<512; i++) {
-		printf("[%d]. %s   ", i, mem[i]);
+void printmemory(int *memdado) {
+	printf("\n############## MEMORIA DE DADOS ##############\n\n");
+	for(int i=0; i<256; i++) {
+		printf("[%d]. %d   ", i, memdado[i]);
 		if (i % 8 == 7)
 		{
 			printf("\n");
@@ -183,32 +224,301 @@ void printReg(int *reg) {
 	}
 }
 
-int executa_step(char mem[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador,Pilha *p, int est) {
-	if (strcmp(mem[*pc], "0000000000000000") == 0 || *pc > 255) {
-		printf("\nFim do programa!");
-		return 1;
-	} else {
-		switch(est) {
-		case 0:
-			empilha(p,registrador,mem, pc);
-			decodificarInstrucao(mem[*pc], in, d);
-			break;
-		case 1:
+// decodifica a instrucao e armazena os valores na struct do tipo Deco ja no formato int
+void decodificarInstrucao(const char *bin, Instrucao *in, Decodificador *d) {
+	copiarBits(bin, in->opcode, 0, 4);    // Copia os 4 bits do opcode (4 bits)
+	d->opcode = binarioParaDecimal(in->opcode, 0);
+	copiarBits(bin, in->rs, 4, 3);        // Copia os 3 bits do rs
+	d->rs = binarioParaDecimal(in->rs, 0);
+	copiarBits(bin, in->rt, 7, 3);        // Copia os 3 bits do rt
+	d->rt = binarioParaDecimal(in->rt, 0);
+	copiarBits(bin, in->rd, 10, 3);       // Copia os 3 bits do rd
+	d->rd = binarioParaDecimal(in->rd, 0);
+	copiarBits(bin, in->funct, 13, 3);    // Copia os 3 bits do funct
+	d->funct = binarioParaDecimal(in->funct, 0);
+	copiarBits(bin, in->imm, 10, 6);      // Copia os 6 bits do imm
+	d->imm = binarioParaDecimal(in->imm, 1);
+	copiarBits(bin, in->addr, 9, 7);     // Copia os 7 bits do addr
+	d->addr = binarioParaDecimal(in->addr, 0);
+}
 
+// copia os bits da instrucao para cada campo da struct instrucao
+void copiarBits(const char *instrucao, char *destino, int inicio, int tamanho)
+{
+	strncpy(destino, instrucao + inicio, tamanho); // Copia os bits desejados
+	destino[tamanho] = '\0';  // Adiciona o terminador de string
+}
+
+// converte de binario para decimal
+int binarioParaDecimal(const char *bin, int sinal) {
+	int valor = (int)strtol(bin, NULL, 2);
+	int bits = strlen(bin);
+
+	if (sinal && bits > 0 && (valor & (1 << (bits - 1)))) {
+		valor = valor - (1 << bits);
+	}
+	return valor;
+}
+
+// funcao para imprimir a instrucao
+void printInstrucao(Decodificador *d) {
+	switch (d->opcode) {
+	case 0: // Tipo R (add, sub, and, or)
+		switch (d->funct) {
+		case 0:
+			printf("add $%d, $%d, $%d", d->rd, d->rs, d->rt);
+			break;
+		case 2:
+			printf("sub $%d, $%d, $%d", d->rd, d->rs, d->rt);
+			break;
+		case 4:
+			printf("and $%d, $%d, $%d", d->rd, d->rs, d->rt);
+			break;
+		case 5:
+			printf("or $%d, $%d, $%d", d->rd, d->rs, d->rt);
+			break;
 		}
+		break;
+	case 4: // addi
+		printf("addi $%d, $%d, %d", d->rt, d->rs, d->imm);
+		break;
+	case 11: // lw
+		printf("lw $%d, %d($%d)", d->rt, d->imm, d->rs);
+		break;
+	case 15: // sw
+		printf("sw $%d, %d($%d)", d->rt, d->imm, d->rs);
+		break;
+	case 8: // beq
+		printf("beq $%d, $%d, %d", d->rs, d->rt, d->imm);
+		break;
+	case 2: // j
+		printf("j %d", d->addr);
+		break;
 	}
 }
 
-void empilha(Pilha *p,int *r,const char m,int *pc) {
+// funcao para implementacao da unidade de controle
+void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
+	int flag=0;
+	int overflow=0;
+
+	if (d->opcode == 11) {
+		reg[d->rt] = ULA(reg[d->rs], memdado[d->imm], 0, &overflow,&flag);
+	}
+	else if (d->opcode == 15) {
+		memdado[ULA(d->rs, d->imm, 0, &overflow,&flag)] = reg[d->rt];
+	}
+	else if (d->opcode == 4) {
+		reg[d->rt] = ULA(reg[d->rs], d->imm, 0, &overflow,&flag);
+	}
+	else if (d->opcode == 0) {
+		if (d->funct == 0) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 0, &overflow,&flag);
+		}
+		else if (d->funct == 2) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 2, &overflow,&flag);
+		}
+		else if (d->funct == 4) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 4, &overflow,&flag);
+		}
+		else if (d->funct == 5) {
+			reg[d->rd] = ULA(reg[d->rs], reg[d->rt], 5, &overflow,&flag);
+		}
+	}
+	else if (d->opcode == 8) {
+		ULA(reg[d->rs], reg[d->rt], 2, &overflow, &flag);
+		if(flag==1) {
+			*pc = somador(*pc,d->imm);
+		}
+	}
+	else if (d->opcode == 2) {
+		*pc = d->addr;
+	}
+}
+
+// funcao para implementacao da ula
+int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
+	int resultado;
+	*flag = 0;
+	*overflow = 0;
+
+	if(opULA == 0) {
+		resultado = op1 + op2;
+
+		if ((op1 > 0 && op2 > 0 && resultado < 0) || (op1 < 0 && op2 < 0 && resultado > 0)) {
+			*overflow = 1;
+			printf("OVERFLOW - ADD: %d + %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
+	}
+	else if(opULA == 2) {
+		resultado = op1 - op2;
+		if(resultado == 0) {
+			*flag = 1;
+		}
+		if ((op1 > 0 && op2 < 0 && resultado < 0) || (op1 < 0 && op2 > 0 && resultado > 0)) {
+			*overflow = 1;
+			printf("OVERFLOW - SUB: %d - %d = %d (fora do intervalo de 8 bits!)\n", op1, op2, resultado);
+		}
+	}
+	else if(opULA == 4) {
+		resultado = op1 & op2;
+	}
+	else if(opULA == 5) {
+		resultado = op1 | op2;
+	}
+	return resultado;
+}
+
+// funcao para conversao das instrucoes para assembly e salvar "arquivo.asm"
+void salvarAssembly(char mem[256][17]) {
+	char arquivo[20];
+
+	printf("Nome do arquivo .asm: ");
+	scanf("%s", arquivo);
+
+	FILE *arq = fopen(arquivo, "w");
+	if (!arq) {
+		perror("Erro ao criar arquivo");
+		return;
+	}
+
+	for (int i = 0; i < 256; i++) {
+		if (mem[i][0] == '\0') continue; // Ignora posiC'C5es vazias
+
+		struct instrucao inst;
+		Decodificador d;
+		decodificarInstrucao(mem[i], &inst, &d);
+
+		// Converte para assembly e escreve no arquivo
+		switch (d.opcode) {
+		case 0: // Tipo R (add, sub, and, or)
+			switch (d.funct) {
+			case 0:
+				fprintf(arq, "add $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
+				break;
+			case 2:
+				fprintf(arq, "sub $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
+				break;
+			case 4:
+				fprintf(arq, "and $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
+				break;
+			case 5:
+				fprintf(arq, "or $%d, $%d, $%d\n", d.rd, d.rs, d.rt);
+				break;
+			}
+			break;
+		case 4: // addi
+			fprintf(arq, "addi $%d, $%d, %d\n", d.rt, d.rs, d.imm);
+			break;
+		case 11: // lw
+			fprintf(arq, "lw $%d, %d($%d)\n", d.rt, d.imm, d.rs);
+			break;
+		case 15: // sw
+			fprintf(arq, "sw $%d, %d($%d)\n", d.rt, d.imm, d.rs);
+			break;
+		case 8: // beq
+			fprintf(arq, "beq $%d, $%d, %d\n", d.rs, d.rt, d.imm);
+			break;
+		case 2: // j
+			fprintf(arq, "j %d\n", d.addr);
+			break;
+		}
+	}
+	fclose(arq);
+	printf("Arquivo %s salvo com sucesso!\n", arquivo);
+}
+
+// executa uma instrucao
+int executaI(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
+	if (strcmp(meminst[*pc], "0000000000000000") == 0 || *pc > 255) {
+		printf("\nFim do programa!");
+		return 1;
+	}
+	else
+	{
+		empilha(p,registrador,memdados, pc);
+		decodificarInstrucao(meminst[*pc], in, d);
+		printInstrucao(d);
+		printf("\n");
+		*pc = somador(*pc,1);
+		controle(d, registrador, memdados, pc);
+	}
+}
+
+// executa todo o programa
+void executaP(char meminst[256][17], Instrucao *in, Decodificador *d, int *pc, int *registrador, int *memdados,Pilha *p) {
+	while(executaI(meminst, in, d, pc, registrador, memdados,p) != 1);
+}
+
+// salva memoria de dados em um "arquivo.dat"
+void salvarMemDados(int *memdados) {
+	FILE *arquivo;
+	char nomeArquivo[20];
+
+	printf("Salvar como: ");
+	scanf("%s", nomeArquivo);
+
+	if ((arquivo = fopen(nomeArquivo, "w")) == NULL)
+	{
+		printf("Erro ao gerar o arquivo!");
+	}
+	for (int i = 0; i < 256; i++)
+	{
+		fprintf(arquivo, "%d\n", memdados[i]);
+	}
+	fclose(arquivo);
+}
+
+// inicia pilha apontando para NULL
+void inicia_pilha(Pilha *p) {
+	p->topo=NULL;
+}
+
+// salva registradores, memoria de instrucoes e pc na pilha
+void empilha(Pilha *p, int *r, int *md, int *pc) {
 	Nodo *nNodo = (Nodo*)malloc(sizeof(Nodo));
 	int i;
 	for(i=0; i<8; i++) {
-		nNodo->ra[i] = r[i];
+		nNodo->ra[i]=r[i];
 	}
-	for(i=256; i<512; i++) {
-		nNodo->da[i] = atoi(m[i]);
+	for(i=0; i<8; i++) {
+		nNodo->mda[i]=md[i];
 	}
 	nNodo->pca=*pc;
 	nNodo->prox=p->topo;
 	p->topo=nNodo;
+}
+
+// funcao de execucao do step back
+int step_back(Pilha *p, int *r, int *md, int *pc) {
+	int i;
+
+	if(limite_back(p) == 1) {
+		return 1;
+	} else {
+		Nodo *remover = p->topo;
+		for(i = 0; i < 8; i++) {
+			r[i] = remover->ra[i];
+		}
+		for(i = 0; i < 8; i++) {
+			md[i] = remover->mda[i];
+		}
+		*pc = remover->pca;
+		p->topo = remover->prox;
+		free(remover);
+		return 0;
+	}
+}
+
+// somador
+int somador(int op1, int op2) {
+	return op1 + op2;
+}
+
+// limite do step back, termina desempilhamento na primeira instrucao executada
+int limite_back(Pilha *p) {
+	if(p->topo==NULL) {
+		printf("\nVoce voltou ao inicio!");
+		return 1;
+	}
 }
