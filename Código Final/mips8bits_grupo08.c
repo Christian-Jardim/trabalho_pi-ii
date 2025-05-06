@@ -338,10 +338,6 @@ void controle(Decodificador *d, int *reg, int *memdado, int *pc) {
 
 // funcao para implementacao da ula
 int ULA(int op1, int op2, int opULA, int *overflow, int *flag) {
-	int resultado;
-	*flag = 0;
-	*overflow = 0;
-
 	if(opULA == 0) {
 		resultado = op1 + op2;
 
